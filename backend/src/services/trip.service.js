@@ -3,7 +3,7 @@ const prisma = require('../config/prisma');
 /**
  * Create a new trip.
  */
-const createTrip = async ({ userId, name, description, startDate, endDate, coverImage }) => {
+const createTrip = async ({ userId, name, description, startDate, endDate, coverImage, budget }) => {
   return await prisma.trip.create({
     data: {
       userId,
@@ -12,6 +12,7 @@ const createTrip = async ({ userId, name, description, startDate, endDate, cover
       startDate: startDate ? new Date(startDate) : null,
       endDate: endDate ? new Date(endDate) : null,
       coverImage,
+      budget: budget ? parseFloat(budget) : null,
     },
   });
 };

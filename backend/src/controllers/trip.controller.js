@@ -20,7 +20,17 @@ const isValidDateRange = (startDateStr, endDateStr) => {
  */
 const create = async (req, res, next) => {
   try {
-    const { name, description, startDate, endDate, coverImage } = req.body;
+    const { name, description, startDate, endDate, coverImage, budget } = req.body;
+
+    if (budget !== undefined && budget !== null) {
+      const parsedBudget = parseFloat(budget);
+      if (isNaN(parsedBudget) || parsedBudget < 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Budget must be a positive number',
+        });
+      }
+    }
 
     if (!name || typeof name !== 'string' || name.trim() === '') {
       return res.status(400).json({
@@ -57,6 +67,7 @@ const create = async (req, res, next) => {
       startDate,
       endDate,
       coverImage,
+      budget,
     });
 
     return res.status(201).json({
@@ -121,9 +132,19 @@ const getOne = async (req, res, next) => {
  */
 const update = async (req, res, next) => {
   try {
-    const { name, startDate, endDate } = req.body;
+    const { name, startDate, endDate, budget } = req.body;
 
     // Run validations on provided fields
+    if (budget !== undefined && budget !== null) {
+      const parsedBudget = parseFloat(budget);
+      if (isNaN(parsedBudget) || parsedBudget < 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Budget must be a positive number',
+        });
+      }
+    }
+
     if (name !== undefined && (typeof name !== 'string' || name.trim() === '')) {
       return res.status(400).json({
         success: false,

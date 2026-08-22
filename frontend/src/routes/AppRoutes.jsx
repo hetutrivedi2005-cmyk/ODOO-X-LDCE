@@ -9,6 +9,7 @@ import NewTripPage from '../pages/NewTripPage';
 import TripDetailsPage from '../pages/TripDetailsPage';
 import EditTripPage from '../pages/EditTripPage';
 import ItineraryPage from '../pages/ItineraryPage';
+import TripExpensesPage from '../pages/TripExpensesPage';
 import ExplorePage from '../pages/ExplorePage';
 import RecommendationsPage from '../pages/RecommendationsPage';
 import ProfilePage from '../pages/ProfilePage';
@@ -37,6 +38,7 @@ const AppRoutes = () => {
           <Route path="/trips/:id" element={<TripDetailsPage />} />
           <Route path="/trips/:id/edit" element={<EditTripPage />} />
           <Route path="/trips/:id/itinerary" element={<ItineraryPage />} />
+          <Route path="/trips/:id/expenses" element={<TripExpensesPage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/explore/recommendations" element={<RecommendationsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
