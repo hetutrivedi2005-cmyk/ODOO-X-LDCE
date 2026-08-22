@@ -18,19 +18,20 @@ model User {
 }
 
 model Trip {
-  id          String        @id @default(uuid())
-  name        String
-  description String?
-  startDate   DateTime?
-  endDate     DateTime?
-  coverImage  String?
-  userId      String
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stops       TripStop[]
-  expenses    Expense[]
-  shares      PublicShare[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id             String          @id @default(uuid())
+  name           String
+  description    String?
+  startDate      DateTime?
+  endDate        DateTime?
+  coverImage     String?
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stops          TripStop[]
+  expenses       Expense[]
+  shares         PublicShare[]
+  itineraryItems ItineraryItem[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 model City {
@@ -66,6 +67,7 @@ model TripStop {
   startDate           DateTime?
   endDate             DateTime?
   itineraryActivities ItineraryActivity[]
+  itineraryItems      ItineraryItem[]
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
 }
@@ -103,4 +105,21 @@ model PublicShare {
   expiresAt  DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+}
+
+model ItineraryItem {
+  id          String    @id @default(uuid())
+  tripId      String
+  trip        Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripStopId  String?
+  tripStop    TripStop? @relation(fields: [tripStopId], references: [id], onDelete: SetNull)
+  title       String
+  description String?
+  date        DateTime
+  startTime   String?
+  endTime     String?
+  location    String?
+  order       Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

@@ -368,3 +368,132 @@ All trip management endpoints are located under `/api/trips` and require authent
     "message": "City removed from trip"
   }
   ```
+
+### Itinerary Planning Endpoints
+
+All itinerary endpoints are located under `/api/trips/:tripId/itinerary` and require authentication.
+
+#### 1. Create Itinerary Item
+- **URL**: `/api/trips/:tripId/itinerary`
+- **Method**: `POST`
+- **Headers**:
+  - `Content-Type: application/json`
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Request Body**:
+  ```json
+  {
+    "tripStopId": "stop-uuid-string",
+    "title": "Visit Eiffel Tower",
+    "description": "Morning sightseeing",
+    "date": "2026-09-10",
+    "startTime": "09:00",
+    "endTime": "11:00",
+    "location": "Eiffel Tower"
+  }
+  ```
+- **Success Response (201 Created)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "item": {
+        "id": "item-uuid-string",
+        "tripId": "trip-uuid-string",
+        "tripStopId": "stop-uuid-string",
+        "title": "Visit Eiffel Tower",
+        "description": "Morning sightseeing",
+        "date": "2026-09-10T00:00:00.000Z",
+        "startTime": "09:00",
+        "endTime": "11:00",
+        "location": "Eiffel Tower",
+        "order": 1,
+        "createdAt": "2026-08-22T07:00:00.000Z",
+        "updatedAt": "2026-08-22T07:00:00.000Z"
+      }
+    }
+  }
+  ```
+
+#### 2. Get Complete Itinerary
+- **URL**: `/api/trips/:tripId/itinerary`
+- **Method**: `GET`
+- **Headers**:
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "itinerary": [
+        {
+          "date": "2026-09-10",
+          "items": [
+            {
+              "id": "item-uuid-string",
+              "tripId": "trip-uuid-string",
+              "tripStopId": "stop-uuid-string",
+              "title": "Visit Eiffel Tower",
+              "description": "Morning sightseeing",
+              "date": "2026-09-10T00:00:00.000Z",
+              "startTime": "09:00",
+              "endTime": "11:00",
+              "location": "Eiffel Tower",
+              "order": 1,
+              "tripStop": {
+                "id": "stop-uuid-string",
+                "city": {
+                  "id": "city-uuid-string",
+                  "name": "Paris",
+                  "country": "France"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+  ```
+
+#### 3. Update Itinerary Item
+- **URL**: `/api/trips/:tripId/itinerary/:itemId`
+- **Method**: `PUT`
+- **Headers**:
+  - `Content-Type: application/json`
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Request Body**:
+  ```json
+  {
+    "title": "Eiffel Tower Sunset Tour",
+    "startTime": "18:00",
+    "endTime": "20:00"
+  }
+  ```
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "item": {
+        "id": "item-uuid-string",
+        "title": "Eiffel Tower Sunset Tour",
+        "startTime": "18:00",
+        "endTime": "20:00",
+        "order": 1
+      }
+    }
+  }
+  ```
+
+#### 4. Delete Itinerary Item
+- **URL**: `/api/trips/:tripId/itinerary/:itemId`
+- **Method**: `DELETE`
+- **Headers**:
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "Itinerary item deleted successfully"
+  }
+  ```
