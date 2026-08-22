@@ -129,7 +129,7 @@ export const LineChart = ({ data = [], isLoading, color = '#3b82f6' }) => {
                 y1={line.y}
                 x2={width - paddingRight}
                 y2={line.y}
-                stroke="#e6ebef"
+                stroke="#1e293b"
                 strokeWidth="1"
                 strokeDasharray="4 4"
               />
@@ -138,7 +138,7 @@ export const LineChart = ({ data = [], isLoading, color = '#3b82f6' }) => {
                 x={paddingLeft - 10}
                 y={line.y + 3.5}
                 textAnchor="end"
-                className="fill-slate-400 text-[9px] font-bold tracking-wider"
+                className="fill-slate-500 text-[9px] font-bold tracking-wider"
               >
                 {formatCurrency(line.val)}
               </text>
@@ -173,7 +173,7 @@ export const LineChart = ({ data = [], isLoading, color = '#3b82f6' }) => {
             y1={height - paddingBottom}
             x2={width - paddingRight}
             y2={height - paddingBottom}
-            stroke="#e6ebef"
+            stroke="#334155"
             strokeWidth="1"
           />
 
@@ -197,7 +197,7 @@ export const LineChart = ({ data = [], isLoading, color = '#3b82f6' }) => {
                     y1={paddingTop}
                     x2={p.x}
                     y2={height - paddingBottom}
-                    stroke="#cbd5e1"
+                    stroke="#475569"
                     strokeWidth="1"
                     strokeDasharray="2 2"
                   />
@@ -208,7 +208,7 @@ export const LineChart = ({ data = [], isLoading, color = '#3b82f6' }) => {
                   cx={p.x}
                   cy={p.y}
                   r={hoveredIndex === idx ? "6.5" : "4.5"}
-                  fill="#ffffff"
+                  fill="#0f172a"
                   stroke={color}
                   strokeWidth="2.5"
                   className="transition-all duration-150"
@@ -258,7 +258,7 @@ export const LineChart = ({ data = [], isLoading, color = '#3b82f6' }) => {
       {/* Floating Hover Tooltip */}
       {hoveredIndex !== null && points[hoveredIndex] && !points[hoveredIndex].isPadded && (
         <div
-          className="absolute z-50 bg-white border border-slate-800 text-[11px] p-2.5 rounded-xl shadow-lg pointer-events-none flex flex-col gap-0.5 min-w-[120px] transition-all duration-75"
+          className="absolute z-50 bg-slate-950/95 border border-slate-800 text-[11px] p-2.5 rounded-xl shadow-2xl pointer-events-none flex flex-col gap-0.5 min-w-[120px] transition-all duration-75 backdrop-blur-md"
           style={{
             left: `${mousePos.x + 12}px`,
             top: `${mousePos.y - 45}px`,
@@ -267,7 +267,7 @@ export const LineChart = ({ data = [], isLoading, color = '#3b82f6' }) => {
           <span className="text-slate-400 font-bold tracking-wide uppercase">
             {points[hoveredIndex].label}
           </span>
-          <span className="font-extrabold text-teal-500">
+          <span className="font-extrabold text-teal-400">
             Total: {formatCurrency(points[hoveredIndex].value)}
           </span>
         </div>

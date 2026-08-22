@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, MapPin } from 'lucide-react';
 import { Card, CardContent } from '../ui/Card';
-import CostLevel from './CostLevel';
+import CostDisplay from './CostDisplay';
 import { cn } from '../../utils/cn';
 import pexelsService from '../../services/pexelsService';
 
@@ -42,7 +42,7 @@ export const DestinationCard = ({
           key={i}
           className={cn(
             "w-3.5 h-3.5",
-            i < clampedRating ? "fill-amber-500 text-amber-500" : "text-slate-800 fill-slate-800"
+            i < clampedRating ? "fill-amber-400 text-amber-400" : "text-slate-700 fill-slate-800"
           )}
         />
       );
@@ -53,13 +53,13 @@ export const DestinationCard = ({
   return (
     <Card
       hoverEffect
-      className={cn('flex flex-col group cursor-pointer border-slate-800 bg-slate-900 shadow-[0_4px_20px_rgba(15,23,42,0.04)]', className)}
+      className={cn('flex flex-col group cursor-pointer border-slate-800 bg-slate-900/50', className)}
       onClick={() => onClick?.(id)}
     >
       {/* Image Overlay */}
       <div className="relative aspect-video w-full overflow-hidden bg-slate-950">
         {imageLoading ? (
-          <div className="w-full h-full bg-slate-950 animate-pulse flex items-center justify-center text-slate-500">
+          <div className="w-full h-full bg-slate-900/60 animate-pulse flex items-center justify-center text-slate-500">
             <span className="text-[10px] tracking-widest uppercase font-semibold">Loading Image...</span>
           </div>
         ) : (
@@ -75,51 +75,46 @@ export const DestinationCard = ({
           />
         )}
         <div className="absolute top-3 left-3">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-white/90 text-slate-100 shadow-sm border border-slate-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-500/10 border border-teal-500/30 text-teal-400 backdrop-blur-sm shadow-md">
             {country}
-          </span>
-        </div>
-        <div className="absolute top-3 right-3">
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-teal-500 text-white shadow-sm">
-            {city.popularity ? `${(city.popularity / 20).toFixed(1)} ★` : 'N/A'}
           </span>
         </div>
       </div>
 
       <CardContent className="flex flex-col flex-grow p-5">
         <div className="flex-grow">
-          <h4 className="text-lg font-bold text-slate-100 tracking-tight flex items-center gap-2 group-hover:text-teal-500 transition-colors">
+          <h4 className="text-lg font-bold text-white tracking-tight flex items-center gap-2 group-hover:text-teal-400 transition-colors">
             {name}
           </h4>
-          <div className="flex items-center gap-1 text-xs text-slate-350 mt-1">
+          <div className="flex items-center gap-1 text-xs text-slate-400 mt-1">
             <MapPin className="w-3.5 h-3.5 text-teal-500" />
             <span>{region}</span>
           </div>
-          <p className="text-xs text-slate-350 line-clamp-2 mt-3 leading-relaxed">
+          <p className="text-xs text-slate-400 line-clamp-2 mt-3 leading-relaxed">
             Experience the culture, culinary delights, and sights in the beautiful city of {name}, {country}.
           </p>
         </div>
 
-        <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-800">
+        <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-800/60">
           <div>
-            <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Trip Rating</span>
+            <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1">Trip Rating</span>
             {renderStars(popularity)}
-            <span className="block text-[10px] font-semibold text-slate-350 mt-1 text-left">
+            <span className="block text-[10px] font-semibold text-slate-400 mt-1 text-left">
               {city.popularity ? `${(city.popularity / 20).toFixed(1)} / 5` : 'N/A'}
             </span>
           </div>
           <div className="text-right">
-            <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Cost Level</span>
-            <CostLevel level={costIndex} alignRight />
+            <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1">Cost Level</span>
+            <CostDisplay costIndex={costIndex} alignRight />
           </div>
         </div>
 
         {(onViewClick || onAddToTripClick) && (
-          <div className="flex gap-2 mt-4 pt-4 border-t border-slate-800">
+          <div className="flex gap-2 mt-4 pt-4 border-t border-slate-800/60">
             {onViewClick && (
               <button
                 type="button"
-                className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-850 text-slate-350 hover:text-slate-100 border border-slate-800 transition-all cursor-pointer text-center active:scale-[0.98]"
+                className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-slate-850 hover:bg-slate-800 text-slate-350 hover:text-white border border-slate-800 hover:border-slate-700 transition-all cursor-pointer text-center active:scale-[0.98]"
                 onClick={(e) => {
                   e.stopPropagation();
                   onViewClick(id);
@@ -131,7 +126,7 @@ export const DestinationCard = ({
             {onAddToTripClick && (
               <button
                 type="button"
-                className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-teal-500 text-white hover:bg-teal-600 shadow-md shadow-teal-500/10 hover:shadow-teal-500/20 active:scale-[0.98] transition-all cursor-pointer text-center border border-teal-500 hover:border-teal-600"
+                className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:from-teal-400 hover:to-emerald-400 shadow-md shadow-teal-500/10 hover:shadow-teal-500/20 active:scale-[0.98] transition-all cursor-pointer text-center"
                 onClick={(e) => {
                   e.stopPropagation();
                   onAddToTripClick(city);

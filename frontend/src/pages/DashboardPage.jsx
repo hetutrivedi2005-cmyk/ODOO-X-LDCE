@@ -66,9 +66,9 @@ const DashboardPage = () => {
   };
 
   const stats = [
-    { title: 'Upcoming Trips', value: overview ? overview.upcomingTrips.toString() : '0', icon: Luggage, color: 'text-teal-500', badge: 'Upcoming' },
-    { title: 'Destinations Visited', value: overview ? overview.totalDestinations.toString() : '0', icon: MapPin, color: 'text-emerald-500', badge: 'Lifetime' },
-    { title: 'Total Travel Budget Spent', value: overview ? formatSpendingKpi(overview.totalSpendingByCurrency) : '₹0', icon: TrendingUp, color: 'text-amber-500', badge: 'Spent' },
+    { title: 'Upcoming Trips', value: overview ? overview.upcomingTrips.toString() : '0', icon: Luggage, color: 'text-teal-400', badge: 'Upcoming' },
+    { title: 'Destinations Visited', value: overview ? overview.totalDestinations.toString() : '0', icon: MapPin, color: 'text-emerald-400', badge: 'Lifetime' },
+    { title: 'Total Travel Budget Spent', value: overview ? formatSpendingKpi(overview.totalSpendingByCurrency) : '₹0', icon: TrendingUp, color: 'text-amber-400', badge: 'Spent' },
   ];
 
   return (
@@ -86,14 +86,14 @@ const DashboardPage = () => {
         {stats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <Card key={idx} hoverEffect className="border-slate-800 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+            <Card key={idx} hoverEffect>
               <CardContent className="flex items-center justify-between p-5">
                 <div className="space-y-1">
-                  <span className="text-xs text-slate-400 font-semibold">{stat.title}</span>
-                  <div className="text-2xl font-black text-slate-100">{stat.value}</div>
+                  <span className="text-xs text-slate-400 font-medium">{stat.title}</span>
+                  <div className="text-2xl font-black text-white">{stat.value}</div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-slate-850 flex items-center justify-center border border-slate-800">
+                  <div className="w-10 h-10 rounded-xl bg-slate-800/80 flex items-center justify-center border border-slate-700">
                     <Icon className={`w-5 h-5 ${stat.color}`} />
                   </div>
                   <Badge variant="primary">{stat.badge}</Badge>
@@ -107,17 +107,17 @@ const DashboardPage = () => {
       {/* Main Feature Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quick Trip Banner */}
-        <Card className="lg:col-span-2 relative overflow-hidden bg-gradient-to-br from-white via-white to-teal-50/20 border-slate-800 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+        <Card className="lg:col-span-2 relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-900 to-teal-950 border-teal-500/20">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Badge variant="primary" icon={Sparkles}>
                 AI Engine Ready
               </Badge>
             </div>
-            <CardTitle className="text-xl md:text-2xl mt-2 text-slate-100">
+            <CardTitle className="text-xl md:text-2xl mt-2 text-white">
               Where would you like to travel next?
             </CardTitle>
-            <CardDescription className="text-slate-350">
+            <CardDescription className="text-slate-300">
               Generate custom itineraries, budget forecasts, and local recommendations in seconds.
             </CardDescription>
           </CardHeader>
@@ -134,32 +134,32 @@ const DashboardPage = () => {
         </Card>
 
         {/* Quick Upcoming Preview */}
-        <Card className="border-slate-800 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base text-slate-100">
-              <Calendar className="w-4 h-4 text-teal-500" /> Next Upcoming Trip
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Calendar className="w-4 h-4 text-teal-400" /> Next Upcoming Trip
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {isLoading ? (
-              <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2 animate-pulse">
-                <div className="h-4 w-3/4 bg-slate-800 rounded" />
-                <div className="h-3.5 w-1/2 bg-slate-800 rounded" />
+              <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2 animate-pulse">
+                <div className="h-4 w-3/4 bg-slate-900 rounded" />
+                <div className="h-3.5 w-1/2 bg-slate-900 rounded" />
               </div>
             ) : upcomingTrip ? (
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-bold text-slate-100 truncate max-w-[160px]" title={upcomingTrip.name}>
+                  <h4 className="text-sm font-semibold text-white truncate max-w-[160px]" title={upcomingTrip.name}>
                     {upcomingTrip.name}
                   </h4>
-                  <p className="text-xs text-slate-350 mt-0.5">
+                  <p className="text-xs text-slate-400 mt-0.5">
                     {formatDateRange(upcomingTrip.startDate, upcomingTrip.endDate)} • {calculateDuration(upcomingTrip.startDate, upcomingTrip.endDate)}
                   </p>
                 </div>
                 <Badge variant="success">Confirmed</Badge>
               </div>
             ) : (
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-center text-xs text-slate-450">
+              <div className="p-3 rounded-xl bg-slate-950/65 border border-slate-800/80 text-center text-xs text-slate-450">
                 No upcoming trips planned yet.
               </div>
             )}

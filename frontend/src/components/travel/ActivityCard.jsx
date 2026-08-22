@@ -32,7 +32,7 @@ export const ActivityCard = ({
   return (
     <Card
       hoverEffect
-      className={cn('flex flex-col group cursor-pointer border-slate-800 bg-slate-900 shadow-[0_4px_20px_rgba(15,23,42,0.04)]', className)}
+      className={cn('flex flex-col group cursor-pointer border-slate-800 bg-slate-900/50', className)}
       onClick={() => onClick?.(id)}
     >
       <div className="relative aspect-video w-full overflow-hidden bg-slate-950">
@@ -43,26 +43,28 @@ export const ActivityCard = ({
           loading="lazy"
         />
         <div className="absolute top-3 left-3">
-          <Badge variant={getBadgeVariant(category)}>{category}</Badge>
+          <Badge variant={getBadgeVariant(category)}>
+            {category}
+          </Badge>
         </div>
       </div>
 
       <CardContent className="flex flex-col flex-grow p-5">
         <div className="flex-grow">
-          <h4 className="text-sm font-bold text-slate-100 truncate group-hover:text-teal-500 transition-colors">
+          <h4 className="text-lg font-bold text-white tracking-tight flex items-center gap-2 group-hover:text-teal-400 transition-colors">
             {name}
           </h4>
-          <div className="flex items-center gap-1.5 text-xs text-slate-350 mt-1">
+          <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-1">
             <Clock className="w-3.5 h-3.5 text-teal-500" />
             <span>{formatDuration(duration)}</span>
           </div>
-          <p className="text-xs text-slate-350 line-clamp-2 mt-3 leading-relaxed">
+          <p className="text-xs text-slate-400 line-clamp-2 mt-3 leading-relaxed">
             {description}
           </p>
         </div>
 
-        <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-800">
-          <span className="text-xs font-bold text-slate-400">Estimated Cost</span>
+        <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-800/60">
+          <span className="text-xs text-slate-500">Estimated Cost</span>
           <CostDisplay amount={estimatedCost} />
         </div>
       </CardContent>
