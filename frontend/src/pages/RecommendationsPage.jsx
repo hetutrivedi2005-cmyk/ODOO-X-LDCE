@@ -19,6 +19,49 @@ import CityDetailsModal from '../components/travel/CityDetailsModal';
 import AddToTripModal from '../components/travel/AddToTripModal';
 import CostDisplay from '../components/travel/CostDisplay';
 import * as cityService from '../services/cityService';
+import pexelsService from '../services/pexelsService';
+
+const RecommendationImage = ({ name, country, backupUrl }) => {
+  const [imageUrl, setImageUrl] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    const fetchImage = async () => {
+      setLoading(true);
+      const url = await pexelsService.getDestinationImage(name, country, backupUrl);
+      if (active) {
+        setImageUrl(url);
+        setLoading(false);
+      }
+    };
+    fetchImage();
+    return () => {
+      active = false;
+    };
+  }, [name, country, backupUrl]);
+
+  if (loading) {
+    return (
+      <div className="w-full h-full bg-slate-900/60 animate-pulse flex items-center justify-center text-slate-500">
+        <span className="text-[10px] tracking-widest uppercase font-semibold">Loading Image...</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imageUrl}
+      onError={(e) => {
+        e.target.onerror = null;
+        e.target.src = 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80';
+      }}
+      alt={name}
+      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+      loading="lazy"
+    />
+  );
+};
 
 const RecommendationsPage = () => {
   const navigate = useNavigate();
@@ -294,11 +337,10 @@ const RecommendationsPage = () => {
                     >
                       {/* Image container */}
                       <div className="relative aspect-video w-full overflow-hidden bg-slate-950">
-                        <img
-                          src={item.image || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80'}
-                          alt={item.name}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          loading="lazy"
+                        <RecommendationImage
+                          name={item.name}
+                          country={item.country}
+                          backupUrl={item.image}
                         />
                         {/* Score Overlay Badge */}
                         <div className="absolute top-3 right-3">

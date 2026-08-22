@@ -140,9 +140,14 @@ const getRecommendations = async (req, res, next) => {
     if (dbCities.length > 0) {
       sourceCities = dbCities.map(city => {
         // Find matching metadata or use default template
-        const meta = Object.values(STATIC_CITY_METADATA).find(
-          m => m.name?.toLowerCase() === city.name?.toLowerCase()
-        ) || {
+        const nameMap = {
+          'c1': 'Paris', 'c2': 'Tokyo', 'c3': 'Kyoto', 'c4': 'Rome', 'c5': 'Florence',
+          'c6': 'Mumbai', 'c7': 'New Delhi', 'c8': 'New York', 'c9': 'Dubai', 'c10': 'Cairo'
+        };
+        const metaKey = Object.keys(nameMap).find(
+          key => nameMap[key].toLowerCase() === city.name?.toLowerCase()
+        );
+        const meta = STATIC_CITY_METADATA[metaKey] || {
           region: 'World',
           interests: ['culture'],
           budget: 'medium',
