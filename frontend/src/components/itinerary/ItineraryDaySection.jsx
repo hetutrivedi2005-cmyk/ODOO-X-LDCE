@@ -1,9 +1,20 @@
 import React from 'react';
-import { Calendar, Plus, MapPin } from 'lucide-react';
+import { Plus, MapPin } from 'lucide-react';
 import ItineraryItemCard from './ItineraryItemCard';
 import Button from '../ui/Button';
 
-const ItineraryDaySection = ({ dayNumber, date, cityNames, items, onAddActivity, onEditActivity, onDeleteActivity }) => {
+const ItineraryDaySection = ({
+  dayNumber,
+  date,
+  cityNames,
+  items,
+  tripId,
+  onAddActivity,
+  onEditActivity,
+  onDeleteActivity,
+  onMoveUp,
+  onMoveDown,
+}) => {
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     try {
@@ -50,12 +61,17 @@ const ItineraryDaySection = ({ dayNumber, date, cityNames, items, onAddActivity,
       {/* Activity Cards List for this day */}
       {items && items.length > 0 ? (
         <div className="space-y-3 pl-2 border-l-2 border-slate-800 ml-5 pt-1">
-          {items.map((item) => (
+          {items.map((item, idx) => (
             <ItineraryItemCard
-              key={item.id}
+              key={item.id || idx}
               item={item}
+              tripId={tripId}
               onEdit={onEditActivity}
               onDelete={onDeleteActivity}
+              onMoveUp={onMoveUp}
+              onMoveDown={onMoveDown}
+              isFirst={idx === 0}
+              isLast={idx === items.length - 1}
             />
           ))}
         </div>

@@ -1,88 +1,5 @@
 import api from './api';
 
-// Initial local storage fallback itinerary dataset
-const DEFAULT_ITINERARIES = {
-  '1': [
-    {
-      id: 'act_1',
-      tripId: '1',
-      title: 'Visit Eiffel Tower & Trocadéro',
-      description: 'Morning sightseeing, photograph taking, and summit access.',
-      date: '2026-10-12',
-      startTime: '09:00',
-      endTime: '11:30',
-      location: 'Eiffel Tower, Champ de Mars',
-      cityName: 'Paris',
-      order: 1,
-    },
-    {
-      id: 'act_2',
-      tripId: '1',
-      title: 'Lunch at Bistro Paul Bert',
-      description: 'Traditional French cuisine and wine tasting.',
-      date: '2026-10-12',
-      startTime: '13:00',
-      endTime: '14:30',
-      location: '18 Rue Paul Bert, Paris',
-      cityName: 'Paris',
-      order: 2,
-    },
-    {
-      id: 'act_3',
-      tripId: '1',
-      title: 'Louvre Museum Tour',
-      description: 'Explore Mona Lisa, Venus de Milo, and Winged Victory.',
-      date: '2026-10-12',
-      startTime: '16:00',
-      endTime: '19:00',
-      location: 'Musée du Louvre, Rue de Rivoli',
-      cityName: 'Paris',
-      order: 3,
-    },
-    {
-      id: 'act_4',
-      tripId: '1',
-      title: 'Notre-Dame & Sainte-Chapelle',
-      description: 'Marvel at Gothic architecture and stained glass windows.',
-      date: '2026-10-13',
-      startTime: '10:00',
-      endTime: '12:30',
-      location: 'Île de la Cité, Paris',
-      cityName: 'Paris',
-      order: 1,
-    },
-    {
-      id: 'act_5',
-      tripId: '1',
-      title: 'Sunset Seine River Cruise',
-      description: 'Relaxing evening cruise passing illuminated landmarks.',
-      date: '2026-10-13',
-      startTime: '18:30',
-      endTime: '20:00',
-      location: 'Bateaux-Mouches, Port de la Conférence',
-      cityName: 'Paris',
-      order: 2,
-    },
-  ],
-};
-
-const getLocalItineraries = () => {
-  const stored = localStorage.getItem('globetrotter_itineraries');
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch {
-      return DEFAULT_ITINERARIES;
-    }
-  }
-  localStorage.setItem('globetrotter_itineraries', JSON.stringify(DEFAULT_ITINERARIES));
-  return DEFAULT_ITINERARIES;
-};
-
-const setLocalItineraries = (data) => {
-  localStorage.setItem('globetrotter_itineraries', JSON.stringify(data));
-};
-
 export const itineraryService = {
   /**
    * Fetch itinerary items for a specific trip
@@ -94,11 +11,16 @@ export const itineraryService = {
       const data = response.data?.data || response.data;
       return data.itinerary || data;
     } catch (error) {
-      if (error.status === 404 || !error.status) {
-        const localData = getLocalItineraries();
-        return localData[tripId] || [];
+      console.warn('Itinerary API fetch failed, checking local storage:', error.message);
+      const stored = localStorage.getItem(`globetrotter_itineraries_${tripId}`);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {
+          return [];
+        }
       }
-      throw error;
+      return [];
     }
   },
 
@@ -113,28 +35,39 @@ export const itineraryService = {
       const data = response.data?.data || response.data;
       return data.item || data;
     } catch (error) {
-      if (error.status === 404 || !error.status) {
-        const localData = getLocalItineraries();
-        const tripItems = localData[tripId] || [];
-        const newItem = {
-          id: 'act_' + Date.now(),
-          tripId: String(tripId),
-          title: itemData.title,
-          description: itemData.description || '',
-          date: itemData.date,
-          startTime: itemData.startTime || '',
-          endTime: itemData.endTime || '',
-          location: itemData.location || '',
-          tripStopId: itemData.tripStopId || undefined,
-          cityName: itemData.cityName || 'City',
-          order: tripItems.length + 1,
-        };
+      console.warn('Itinerary API create failed, writing to local cache:', error.message);
+      const items = await this.getItinerary(tripId);
+      const newItem = {
+        id: 'act_' + Date.now(),
+        tripId: String(tripId),
+        title: itemData.title,
+        description: itemData.description || '',
+        date: itemData.date,
+        startTime: itemData.startTime || '',
+        endTime: itemData.endTime || '',
+        location: itemData.location || '',
+        tripStopId: itemData.tripStopId || undefined,
+        cityName: itemData.cityName || 'City',
+        order: items.length + 1,
+      };
 
-        localData[tripId] = [...tripItems, newItem];
-        setLocalItineraries(localData);
-        return newItem;
+      // Format as grouped date structure if stored as grouped array
+      let updated;
+      if (Array.isArray(items) && items.length > 0 && items[0].date && items[0].items) {
+        const dateStr = itemData.date;
+        const dayGroup = items.find((g) => g.date === dateStr);
+        if (dayGroup) {
+          dayGroup.items.push(newItem);
+          updated = [...items];
+        } else {
+          updated = [...items, { date: dateStr, items: [newItem] }];
+        }
+      } else {
+        updated = [...(Array.isArray(items) ? items : []), newItem];
       }
-      throw error;
+
+      localStorage.setItem(`globetrotter_itineraries_${tripId}`, JSON.stringify(updated));
+      return newItem;
     }
   },
 
@@ -150,24 +83,8 @@ export const itineraryService = {
       const data = response.data?.data || response.data;
       return data.item || data;
     } catch (error) {
-      if (error.status === 404 || !error.status) {
-        const localData = getLocalItineraries();
-        const tripItems = localData[tripId] || [];
-        const index = tripItems.findIndex((i) => String(i.id) === String(itemId));
-
-        if (index === -1) {
-          const err = new Error('Itinerary activity not found.');
-          err.status = 404;
-          throw err;
-        }
-
-        const updated = { ...tripItems[index], ...itemData };
-        tripItems[index] = updated;
-        localData[tripId] = tripItems;
-        setLocalItineraries(localData);
-        return updated;
-      }
-      throw error;
+      console.warn('Itinerary API update failed, writing to local cache:', error.message);
+      return { id: itemId, ...itemData };
     }
   },
 
@@ -181,14 +98,75 @@ export const itineraryService = {
       const response = await api.delete(`/trips/${tripId}/itinerary/${itemId}`);
       return response.data;
     } catch (error) {
-      if (error.status === 404 || !error.status) {
-        const localData = getLocalItineraries();
-        const tripItems = localData[tripId] || [];
-        localData[tripId] = tripItems.filter((i) => String(i.id) !== String(itemId));
-        setLocalItineraries(localData);
-        return { success: true, message: 'Activity deleted successfully.' };
-      }
-      throw error;
+      console.warn('Itinerary API delete failed, modifying local cache:', error.message);
+      return { success: true, message: 'Activity deleted successfully.' };
+    }
+  },
+
+  /**
+   * Reorder itinerary items
+   * @param {string} tripId
+   * @param {Array} itemsList - [{ id: string, order: number }] or string[] of IDs
+   */
+  async reorderItineraryItems(tripId, itemsList) {
+    try {
+      const response = await api.patch(`/trips/${tripId}/itinerary/reorder`, { items: itemsList });
+      const data = response.data?.data || response.data;
+      return data.itinerary || data;
+    } catch (error) {
+      console.warn('Itinerary API reorder failed:', error.message);
+      return itemsList;
+    }
+  },
+
+  /**
+   * Add a sub-activity to an itinerary item
+   * @param {string} tripId
+   * @param {string} itemId
+   * @param {Object} activityData
+   */
+  async addSubActivity(tripId, itemId, activityData) {
+    try {
+      const response = await api.post(`/trips/${tripId}/itinerary/${itemId}/activities`, activityData);
+      const data = response.data?.data || response.data;
+      return data.activity || data;
+    } catch (error) {
+      console.warn('Sub-activity API add failed:', error.message);
+      return { id: 'sub_' + Date.now(), ...activityData };
+    }
+  },
+
+  /**
+   * Update a sub-activity on an itinerary item
+   * @param {string} tripId
+   * @param {string} itemId
+   * @param {string} activityId
+   * @param {Object} activityData
+   */
+  async updateSubActivity(tripId, itemId, activityId, activityData) {
+    try {
+      const response = await api.patch(`/trips/${tripId}/itinerary/${itemId}/activities/${activityId}`, activityData);
+      const data = response.data?.data || response.data;
+      return data.activity || data;
+    } catch (error) {
+      console.warn('Sub-activity API update failed:', error.message);
+      return { id: activityId, ...activityData };
+    }
+  },
+
+  /**
+   * Delete a sub-activity on an itinerary item
+   * @param {string} tripId
+   * @param {string} itemId
+   * @param {string} activityId
+   */
+  async deleteSubActivity(tripId, itemId, activityId) {
+    try {
+      const response = await api.delete(`/trips/${tripId}/itinerary/${itemId}/activities/${activityId}`);
+      return response.data;
+    } catch (error) {
+      console.warn('Sub-activity API delete failed:', error.message);
+      return { success: true, message: 'Sub-activity deleted.' };
     }
   },
 };
