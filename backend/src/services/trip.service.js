@@ -1,10 +1,11 @@
 const prisma = require('../config/prisma');
+const { logActivity } = require('./activityLog.service');
 
 /**
  * Create a new trip.
  */
 const createTrip = async ({ userId, name, description, startDate, endDate, coverImage, budget }) => {
-  return await prisma.trip.create({
+  const trip = await prisma.trip.create({
     data: {
       userId,
       name,
@@ -15,6 +16,19 @@ const createTrip = async ({ userId, name, description, startDate, endDate, cover
       budget: budget ? parseFloat(budget) : null,
     },
   });
+
+  // Log activity
+  logActivity({
+    userId,
+    tripId: trip.id,
+    action: 'TRIP_CREATED',
+    entityType: 'TRIP',
+    entityId: trip.id,
+    description: `Created trip "${trip.name}"`,
+    metadata: { name: trip.name, startDate, endDate },
+  });
+
+  return trip;
 };
 
 /**
@@ -74,10 +88,23 @@ const updateTrip = async (id, userId, data) => {
   if (updateData.startDate) updateData.startDate = new Date(updateData.startDate);
   if (updateData.endDate) updateData.endDate = new Date(updateData.endDate);
 
-  return await prisma.trip.update({
+  const updatedTrip = await prisma.trip.update({
     where: { id },
     data: updateData,
   });
+
+  // Log activity
+  logActivity({
+    userId,
+    tripId: id,
+    action: 'TRIP_UPDATED',
+    entityType: 'TRIP',
+    entityId: id,
+    description: `Updated trip "${updatedTrip.name}" details`,
+    metadata: { updatedFields: Object.keys(data) },
+  });
+
+  return updatedTrip;
 };
 
 /**
@@ -134,7 +161,7 @@ const addStop = async (tripId, userId, { cityId, startDate, endDate }) => {
   const nextOrder = lastStop ? lastStop.order + 1 : 1;
 
   // Create the stop record
-  return await prisma.tripStop.create({
+  const stop = await prisma.tripStop.create({
     data: {
       tripId,
       cityId,
@@ -142,7 +169,23 @@ const addStop = async (tripId, userId, { cityId, startDate, endDate }) => {
       endDate: endDate ? new Date(endDate) : null,
       order: nextOrder,
     },
+    include: {
+      city: true,
+    },
   });
+
+  // Log activity
+  logActivity({
+    userId,
+    tripId,
+    action: 'DESTINATION_ADDED',
+    entityType: 'DESTINATION',
+    entityId: stop.id,
+    description: `Added destination ${city.name}, ${city.country}`,
+    metadata: { cityName: city.name, country: city.country },
+  });
+
+  return stop;
 };
 
 /**
@@ -163,6 +206,7 @@ const removeStop = async (tripId, userId, stopId) => {
   // Verify stop exists and belongs to this trip
   const stop = await prisma.tripStop.findFirst({
     where: { id: stopId, tripId },
+    include: { city: true },
   });
 
   if (!stop) {
@@ -171,9 +215,22 @@ const removeStop = async (tripId, userId, stopId) => {
     throw error;
   }
 
-  return await prisma.tripStop.delete({
+  const result = await prisma.tripStop.delete({
     where: { id: stopId },
   });
+
+  // Log activity
+  logActivity({
+    userId,
+    tripId,
+    action: 'DESTINATION_REMOVED',
+    entityType: 'DESTINATION',
+    entityId: stopId,
+    description: `Removed destination ${stop.city ? stop.city.name : 'stop'}`,
+    metadata: { cityName: stop.city ? stop.city.name : null },
+  });
+
+  return result;
 };
 
 module.exports = {

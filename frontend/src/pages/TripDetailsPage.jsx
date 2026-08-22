@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, Edit2, Trash2, Plus, ArrowLeft, Clock, FileText, Coins, Share2, Globe } from 'lucide-react';
+import { MapPin, Calendar, Edit2, Trash2, Plus, ArrowLeft, Clock, FileText, Coins, Share2, Globe, History } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -178,6 +178,14 @@ const TripDetailsPage = () => {
                 onClick={() => navigate(`/trips/${trip.id}/itinerary`)}
               >
                 Day-wise Itinerary
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={History}
+                onClick={() => navigate(`/trips/${trip.id}/history`)}
+              >
+                Activity Log
               </Button>
               <Button
                 variant="outline"

@@ -8,13 +8,14 @@ generator client {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
+  id           String        @id @default(uuid())
+  email        String        @unique
   passwordHash String
   name         String?
   trips        Trip[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  activityLogs ActivityLog[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model Trip {
@@ -31,6 +32,7 @@ model Trip {
   expenses       Expense[]
   shares         PublicShare[]
   itineraryItems ItineraryItem[]
+  activityLogs   ActivityLog[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 }
@@ -127,4 +129,21 @@ model ItineraryItem {
   activities  ItineraryActivity[]
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tripId      String
+  trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  action      String
+  entityType  String
+  entityId    String?
+  description String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([tripId, createdAt])
+  @@index([userId])
 }

@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const { logActivity } = require('./activityLog.service');
 
 /**
  * Helper to get date boundaries for a specific day.
@@ -59,7 +60,7 @@ const createItem = async (tripId, userId, { tripStopId, title, description, date
   const nextOrder = lastItem ? lastItem.order + 1 : 1;
 
   // 4. Create the itinerary item
-  return await prisma.itineraryItem.create({
+  const item = await prisma.itineraryItem.create({
     data: {
       tripId,
       tripStopId: tripStopId || null,
@@ -80,6 +81,19 @@ const createItem = async (tripId, userId, { tripStopId, title, description, date
       },
     },
   });
+
+  // Log activity
+  logActivity({
+    userId,
+    tripId,
+    action: 'ITINERARY_CREATED',
+    entityType: 'ITINERARY',
+    entityId: item.id,
+    description: `Added itinerary activity "${item.title}"`,
+    metadata: { title: item.title, date, startTime, location },
+  });
+
+  return item;
 };
 
 /**
@@ -176,7 +190,6 @@ const updateItem = async (tripId, itemId, userId, data) => {
     const originalDateStr = item.date.toISOString().split('T')[0];
     const newDateStr = new Date(updateData.date).toISOString().split('T')[0];
 
-    // Recalculate order only if the date is actually changing
     if (originalDateStr !== newDateStr) {
       const { startOfDay, endOfDay } = getDateBoundaries(updateData.date);
       updateData.date = startOfDay;
@@ -193,13 +206,12 @@ const updateItem = async (tripId, itemId, userId, data) => {
       });
       updateData.order = lastItemForNewDate ? lastItemForNewDate.order + 1 : 1;
     } else {
-      // Date didn't change, keep existing date
       updateData.date = item.date;
     }
   }
 
   // 5. Update database record
-  return await prisma.itineraryItem.update({
+  const updatedItem = await prisma.itineraryItem.update({
     where: { id: itemId },
     data: updateData,
     include: {
@@ -211,6 +223,19 @@ const updateItem = async (tripId, itemId, userId, data) => {
       },
     },
   });
+
+  // Log activity
+  logActivity({
+    userId,
+    tripId,
+    action: 'ITINERARY_UPDATED',
+    entityType: 'ITINERARY',
+    entityId: itemId,
+    description: `Updated itinerary item "${updatedItem.title}"`,
+    metadata: { title: updatedItem.title },
+  });
+
+  return updatedItem;
 };
 
 /**
@@ -239,19 +264,28 @@ const deleteItem = async (tripId, itemId, userId) => {
     throw error;
   }
 
-  // 3. Delete the item
-  return await prisma.itineraryItem.delete({
+  const result = await prisma.itineraryItem.delete({
     where: { id: itemId },
   });
+
+  // Log activity
+  logActivity({
+    userId,
+    tripId,
+    action: 'ITINERARY_DELETED',
+    entityType: 'ITINERARY',
+    entityId: itemId,
+    description: `Deleted itinerary activity "${item.title}"`,
+    metadata: { title: item.title },
+  });
+
+  return result;
 };
 
 /**
  * Reorder itinerary items using a database transaction.
- * Supports items array: [{ id: "...", order: 1 }, { id: "...", order: 2 }]
- * or itemIds array: ["id1", "id2"]
  */
 const reorderItems = async (tripId, userId, itemsList) => {
-  // 1. Verify trip ownership
   const trip = await prisma.trip.findFirst({
     where: { id: tripId, userId },
   });
@@ -265,10 +299,8 @@ const reorderItems = async (tripId, userId, itemsList) => {
   let updates = [];
   if (Array.isArray(itemsList)) {
     if (typeof itemsList[0] === 'string') {
-      // Array of item ID strings
       updates = itemsList.map((id, index) => ({ id, order: index + 1 }));
     } else if (typeof itemsList[0] === 'object' && itemsList[0].id) {
-      // Array of objects { id, order }
       updates = itemsList.map((item, index) => ({
         id: item.id,
         order: item.order !== undefined ? item.order : index + 1,
@@ -282,7 +314,6 @@ const reorderItems = async (tripId, userId, itemsList) => {
     throw error;
   }
 
-  // Execute order updates inside a transaction
   await prisma.$transaction(
     updates.map((update) =>
       prisma.itineraryItem.updateMany({
@@ -292,6 +323,16 @@ const reorderItems = async (tripId, userId, itemsList) => {
     )
   );
 
+  // Log activity
+  logActivity({
+    userId,
+    tripId,
+    action: 'ITINERARY_UPDATED',
+    entityType: 'ITINERARY',
+    entityId: tripId,
+    description: `Reordered itinerary items for day`,
+  });
+
   return await getItinerary(tripId, userId);
 };
 
@@ -299,7 +340,6 @@ const reorderItems = async (tripId, userId, itemsList) => {
  * Create a sub-activity on an itinerary item
  */
 const createActivity = async (tripId, itemId, userId, { title, notes, scheduledAt }) => {
-  // 1. Verify trip ownership
   const trip = await prisma.trip.findFirst({
     where: { id: tripId, userId },
   });
@@ -310,7 +350,6 @@ const createActivity = async (tripId, itemId, userId, { title, notes, scheduledA
     throw error;
   }
 
-  // 2. Verify item belongs to trip
   const item = await prisma.itineraryItem.findFirst({
     where: { id: itemId, tripId },
   });
@@ -321,7 +360,7 @@ const createActivity = async (tripId, itemId, userId, { title, notes, scheduledA
     throw error;
   }
 
-  return await prisma.itineraryActivity.create({
+  const activity = await prisma.itineraryActivity.create({
     data: {
       itineraryItemId: itemId,
       title: title ? title.trim() : 'Sub-activity',
@@ -329,13 +368,23 @@ const createActivity = async (tripId, itemId, userId, { title, notes, scheduledA
       scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
     },
   });
+
+  logActivity({
+    userId,
+    tripId,
+    action: 'ITINERARY_UPDATED',
+    entityType: 'ITINERARY',
+    entityId: itemId,
+    description: `Added sub-task "${activity.title}" to ${item.title}`,
+  });
+
+  return activity;
 };
 
 /**
  * Update a sub-activity on an itinerary item
  */
 const updateActivity = async (tripId, itemId, activityId, userId, data) => {
-  // 1. Verify trip ownership
   const trip = await prisma.trip.findFirst({
     where: { id: tripId, userId },
   });
@@ -346,7 +395,6 @@ const updateActivity = async (tripId, itemId, activityId, userId, data) => {
     throw error;
   }
 
-  // 2. Verify activity exists and belongs to itinerary item
   const activity = await prisma.itineraryActivity.findFirst({
     where: { id: activityId, itineraryItemId: itemId },
   });
@@ -371,7 +419,6 @@ const updateActivity = async (tripId, itemId, activityId, userId, data) => {
  * Delete a sub-activity on an itinerary item
  */
 const deleteActivity = async (tripId, itemId, activityId, userId) => {
-  // 1. Verify trip ownership
   const trip = await prisma.trip.findFirst({
     where: { id: tripId, userId },
   });
@@ -382,7 +429,6 @@ const deleteActivity = async (tripId, itemId, activityId, userId) => {
     throw error;
   }
 
-  // 2. Verify activity exists
   const activity = await prisma.itineraryActivity.findFirst({
     where: { id: activityId, itineraryItemId: itemId },
   });

@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const { logActivity } = require('./activityLog.service');
 
 /**
  * Verify trip existence and ownership.
@@ -31,7 +32,7 @@ const getExpenses = async (tripId, userId) => {
  */
 const createExpense = async (tripId, userId, { amount, currency, category, description, spentAt }) => {
   await verifyTripOwnership(tripId, userId);
-  return await prisma.expense.create({
+  const expense = await prisma.expense.create({
     data: {
       tripId,
       amount: parseFloat(amount),
@@ -41,6 +42,19 @@ const createExpense = async (tripId, userId, { amount, currency, category, descr
       spentAt: spentAt ? new Date(spentAt) : new Date(),
     },
   });
+
+  // Log activity
+  logActivity({
+    userId,
+    tripId,
+    action: 'EXPENSE_ADDED',
+    entityType: 'EXPENSE',
+    entityId: expense.id,
+    description: `Added expense: ${expense.currency} ${expense.amount} (${expense.category})`,
+    metadata: { amount: expense.amount, currency: expense.currency, category: expense.category },
+  });
+
+  return expense;
 };
 
 /**
@@ -66,10 +80,23 @@ const updateExpense = async (tripId, expenseId, userId, data) => {
   if (updateData.description !== undefined) updateData.description = updateData.description ? updateData.description.trim() : null;
   if (updateData.spentAt !== undefined) updateData.spentAt = new Date(updateData.spentAt);
 
-  return await prisma.expense.update({
+  const updatedExpense = await prisma.expense.update({
     where: { id: expenseId },
     data: updateData,
   });
+
+  // Log activity
+  logActivity({
+    userId,
+    tripId,
+    action: 'EXPENSE_UPDATED',
+    entityType: 'EXPENSE',
+    entityId: expenseId,
+    description: `Updated expense: ${updatedExpense.currency} ${updatedExpense.amount}`,
+    metadata: { amount: updatedExpense.amount, category: updatedExpense.category },
+  });
+
+  return updatedExpense;
 };
 
 /**
@@ -88,9 +115,22 @@ const deleteExpense = async (tripId, expenseId, userId) => {
     throw error;
   }
 
-  return await prisma.expense.delete({
+  const result = await prisma.expense.delete({
     where: { id: expenseId },
   });
+
+  // Log activity
+  logActivity({
+    userId,
+    tripId,
+    action: 'EXPENSE_DELETED',
+    entityType: 'EXPENSE',
+    entityId: expenseId,
+    description: `Deleted expense: ${expense.currency} ${expense.amount} (${expense.category})`,
+    metadata: { amount: expense.amount, category: expense.category },
+  });
+
+  return result;
 };
 
 /**
@@ -106,17 +146,15 @@ const getSummary = async (tripId, userId) => {
 
   const expenseCount = expenses.length;
   let totalAmount = 0;
-  
+
   const currencyTotalsMap = {};
   const categoryTotalsMap = {};
 
   expenses.forEach((exp) => {
     totalAmount += exp.amount;
-    
-    // Currency grouping
+
     currencyTotalsMap[exp.currency] = (currencyTotalsMap[exp.currency] || 0) + exp.amount;
-    
-    // Category grouping
+
     const cat = exp.category || 'Other';
     categoryTotalsMap[cat] = (categoryTotalsMap[cat] || 0) + exp.amount;
   });
@@ -131,7 +169,6 @@ const getSummary = async (tripId, userId) => {
     total: categoryTotalsMap[cat],
   }));
 
-  // Fetch top 5 recent expenses
   const recentExpenses = expenses.slice(0, 5);
 
   return {
