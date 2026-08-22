@@ -84,7 +84,45 @@ const login = async ({ email, password }) => {
   };
 };
 
+/**
+ * Update user profile details.
+ * @param {string} userId
+ * @param {object} profileData - { name, currency, language, avatarUrl }
+ * @returns {object} { user: { id, name, email, avatarUrl, currency, language } }
+ */
+const updateProfile = async (userId, { name, currency, language, avatarUrl }) => {
+  if (avatarUrl && avatarUrl.length > 7 * 1024 * 1024) {
+    const error = new Error('Profile image size exceeds 5MB limit');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      name: name || undefined,
+      currency: currency || undefined,
+      language: language || undefined,
+      avatarUrl: avatarUrl === '' ? null : avatarUrl,
+    },
+  });
+
+  return {
+    user: {
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      avatarUrl: updatedUser.avatarUrl,
+      currency: updatedUser.currency,
+      language: updatedUser.language,
+      role: updatedUser.role,
+      status: updatedUser.status,
+    },
+  };
+};
+
 module.exports = {
   register,
   login,
+  updateProfile,
 };

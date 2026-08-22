@@ -105,6 +105,11 @@ export const AuthProvider = ({ children }) => {
     clearAuthData();
   }, [clearAuthData]);
 
+  // Update user info handler
+  const updateUser = useCallback((updatedUserObj) => {
+    setUser(updatedUserObj);
+  }, []);
+
   const value = {
     user,
     token,
@@ -113,6 +118,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

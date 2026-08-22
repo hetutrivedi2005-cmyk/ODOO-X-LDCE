@@ -14,6 +14,9 @@ model User {
   name          String?
   role          String         @default("USER")
   status        String         @default("ACTIVE")
+  avatarUrl     String?
+  currency      String?        @default("USD")
+  language      String?        @default("English (US)")
   trips         Trip[]
   activityLogs  ActivityLog[]
   notifications Notification[]

@@ -189,8 +189,14 @@ const Header = ({ onOpenMobileMenu }) => {
           to="/profile"
           className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full border border-slate-800 hover:border-slate-700 bg-slate-900/80 hover:bg-slate-800 transition-all"
         >
-          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center font-bold text-xs text-slate-950">
-            {getInitials(user?.name)}
+          <div className="w-7 h-7 rounded-full overflow-hidden border border-slate-800 bg-slate-950 flex items-center justify-center text-xs">
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-tr from-teal-500 to-emerald-450 flex items-center justify-center font-bold text-slate-955">
+                {getInitials(user?.name)}
+              </div>
+            )}
           </div>
           <span className="hidden md:inline text-xs font-medium text-slate-200">{firstName}</span>
           <Badge variant="primary" className="hidden lg:inline-flex text-[10px] py-0 px-1.5">

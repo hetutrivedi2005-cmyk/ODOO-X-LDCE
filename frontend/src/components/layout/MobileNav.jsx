@@ -113,8 +113,14 @@ const MobileNav = ({ isOpen, onClose }) => {
                 onClick={onClose}
                 className="flex items-center gap-3 p-2 rounded-xl bg-slate-900"
               >
-                <div className="w-9 h-9 rounded-full bg-teal-500 text-slate-950 flex items-center justify-center font-bold text-xs">
-                  {getInitials(user?.name)}
+                <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-800 bg-slate-950 flex items-center justify-center text-xs font-bold shrink-0">
+                  {user?.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-teal-500 text-slate-955 flex items-center justify-center">
+                      {getInitials(user?.name)}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs font-semibold text-white truncate">{user?.name || 'Traveler'}</span>

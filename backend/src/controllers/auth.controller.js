@@ -109,7 +109,6 @@ const login = async (req, res, next) => {
  */
 const getMe = async (req, res, next) => {
   try {
-    // req.user has already been resolved and attached by the protect middleware
     return res.status(200).json({
       success: true,
       data: {
@@ -121,8 +120,38 @@ const getMe = async (req, res, next) => {
   }
 };
 
+/**
+ * Handle update user profile request.
+ */
+const updateProfile = async (req, res, next) => {
+  try {
+    const { name, currency, language, avatarUrl } = req.body;
+
+    const result = await authService.updateProfile(req.user.id, {
+      name,
+      currency,
+      language,
+      avatarUrl,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
   getMe,
+  updateProfile,
 };

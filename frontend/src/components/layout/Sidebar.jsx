@@ -148,8 +148,14 @@ const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
             isCollapsed && 'justify-center'
           )}
         >
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-teal-500 to-emerald-500 flex items-center justify-center font-bold text-slate-950 shrink-0 shadow-md">
-            {getInitials(user?.name)}
+          <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-800 bg-slate-955 flex items-center justify-center shrink-0 shadow-md">
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-tr from-teal-500 to-emerald-500 flex items-center justify-center font-bold text-slate-955">
+                {getInitials(user?.name)}
+              </div>
+            )}
           </div>
           {!isCollapsed && (
             <div className="flex flex-col min-w-0 flex-1">

@@ -28,7 +28,16 @@ export const authService = {
   async getCurrentUser() {
     const response = await api.get('/auth/me');
     const responseData = response.data?.data || response.data;
-    // Support returning user object directly or nested { user }
+    return responseData.user || responseData;
+  },
+
+  /**
+   * Update user profile settings
+   * @param {Object} data - { name, currency, language, avatarUrl }
+   */
+  async updateProfile(data) {
+    const response = await api.put('/auth/profile', data);
+    const responseData = response.data?.data || response.data;
     return responseData.user || responseData;
   },
 };
