@@ -569,13 +569,7 @@ Ensure environment variables (`PORT`, `DATABASE_URL`, `JWT_SECRET`, `CLIENT_URL`
 - Export to PDF / iCal: Downloadable trip itineraries and calendar synchronization.
 - Multi-Currency Conversion: Real-time currency exchange rates for global expense logging.
 
-## Contributors
 
-GlobeTrotter was developed for the ODOO-X-LDCE Hackathon by:
-
-- Person 1 (Akshay) — Backend Architecture & Core APIs
-- Person 2 (Het) — Frontend Foundation, Auth, Itinerary Management, History, & Admin System
-- Person 3 (Mantra) — City Discovery, Recommendations, & Reporting
 
 ## License
 
