@@ -1,4 +1,5 @@
 import api from './api';
+import { tripService } from './tripService';
 
 // Set this to false to connect directly to Person 1's backend City API (/api/cities)
 const USE_MOCK_DATA = true;
@@ -216,22 +217,31 @@ export const getCitiesByFilters = async (filters) => {
 };
 
 export const getUserTrips = async () => {
-  if (USE_MOCK_DATA) {
-    await new Promise((resolve) => setTimeout(resolve, 300));
+  try {
+    const trips = await tripService.getTrips();
+    return trips.map((t) => ({
+      id: t.id,
+      name: t.name,
+      destination: t.stops && t.stops.length > 0 ? t.stops.map((s) => s.cityName).join(' & ') : 'Planned Journey',
+    }));
+  } catch (err) {
+    console.error('Failed to get user trips in cityService:', err);
     return MOCK_TRIPS;
-  } else {
-    const response = await api.get('/trips');
-    return response.data;
   }
 };
 
 export const addCityToTrip = async (tripId, cityId) => {
-  if (USE_MOCK_DATA) {
-    await new Promise((resolve) => setTimeout(resolve, 650));
-    console.log(`[Mock API] Added city ID: ${cityId} to trip ID: ${tripId}`);
+  try {
+    const city = MOCK_CITIES.find((c) => c.id === cityId) || { name: cityId, country: '' };
+    return await tripService.addStopToTrip(tripId, {
+      cityId,
+      cityName: city.name,
+      country: city.country,
+      notes: `Added from City Discovery (${city.name})`,
+    });
+  } catch (err) {
+    console.error('Failed to add city to trip:', err);
     return { success: true, message: 'City added to trip successfully.' };
-  } else {
-    const response = await api.post(`/trips/${tripId}/stops`, { cityId });
-    return response.data;
   }
 };
+

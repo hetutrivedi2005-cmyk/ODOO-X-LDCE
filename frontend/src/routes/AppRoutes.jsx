@@ -6,6 +6,8 @@ import ProtectedRoute from '../components/layout/ProtectedRoute';
 import DashboardPage from '../pages/DashboardPage';
 import TripsPage from '../pages/TripsPage';
 import NewTripPage from '../pages/NewTripPage';
+import TripDetailsPage from '../pages/TripDetailsPage';
+import EditTripPage from '../pages/EditTripPage';
 import ExplorePage from '../pages/ExplorePage';
 import ProfilePage from '../pages/ProfilePage';
 import LoginPage from '../pages/LoginPage';
@@ -30,6 +32,8 @@ const AppRoutes = () => {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/trips" element={<TripsPage />} />
           <Route path="/trips/new" element={<NewTripPage />} />
+          <Route path="/trips/:id" element={<TripDetailsPage />} />
+          <Route path="/trips/:id/edit" element={<EditTripPage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
