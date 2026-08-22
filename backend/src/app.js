@@ -13,6 +13,7 @@ const shareRouter = require('./routes/share.routes');
 const historyRouter = require('./routes/history.routes');
 const reportRouter = require('./routes/report.routes');
 const notificationRouter = require('./routes/notification.routes');
+const adminRouter = require('./routes/admin.routes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -38,6 +39,7 @@ app.use('/api/trips', itineraryRouter);
 app.use('/api/trips', expenseRouter);
 app.use('/api/trips', historyRouter);
 app.use('/api/notifications', notificationRouter);
+app.use('/api/admin', adminRouter);
 
 // Central 404 handler for unmatched routes
 app.use(notFoundHandler);

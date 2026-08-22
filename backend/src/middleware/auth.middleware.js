@@ -8,7 +8,6 @@ const protect = async (req, res, next) => {
   try {
     let token;
 
-    // Check for Authorization header with Bearer token
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith('Bearer')
@@ -23,7 +22,6 @@ const protect = async (req, res, next) => {
       });
     }
 
-    // Verify token
     const decoded = verifyToken(token);
 
     if (!decoded || !decoded.userId) {
@@ -33,7 +31,6 @@ const protect = async (req, res, next) => {
       });
     }
 
-    // Fetch user from database
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
     });
@@ -45,14 +42,18 @@ const protect = async (req, res, next) => {
       });
     }
 
-    // Secure user info by removing sensitive fields
+    if (user.status === 'INACTIVE') {
+      return res.status(403).json({
+        success: false,
+        message: 'Account has been deactivated. Please contact administrator.',
+      });
+    }
+
     delete user.passwordHash;
 
-    // Attach user to request object
     req.user = user;
     next();
   } catch (error) {
-    // Return generic auth required error on expiry/validation failure
     return res.status(401).json({
       success: false,
       message: 'Authentication required',
@@ -60,6 +61,28 @@ const protect = async (req, res, next) => {
   }
 };
 
+/**
+ * Middleware to restrict access to ADMIN role users only.
+ */
+const requireAdmin = async (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required',
+    });
+  }
+
+  if (req.user.role !== 'ADMIN') {
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden: Administrative privilege required',
+    });
+  }
+
+  next();
+};
+
 module.exports = {
   protect,
+  requireAdmin,
 };
