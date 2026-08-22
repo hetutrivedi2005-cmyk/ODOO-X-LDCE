@@ -266,8 +266,12 @@ const TripDetailsPage = () => {
                     </div>
                     <div>
                       <h3 className="text-base font-bold text-white flex items-center gap-2">
-                        {stop.cityName || stop.name}
-                        {stop.country && <span className="text-xs font-normal text-slate-400">({stop.country})</span>}
+                        {stop.cityName || stop.name || stop.city?.name}
+                        {(stop.country || stop.city?.country) && (
+                          <span className="text-xs font-normal text-slate-400">
+                            ({stop.country || stop.city?.country})
+                          </span>
+                        )}
                       </h3>
                       {(stop.startDate || stop.endDate) && (
                         <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-1">

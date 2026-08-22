@@ -1,17 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Calendar, FileText, X } from 'lucide-react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
+import * as cityService from '../../services/cityService';
 
 const AddDestinationModal = ({ isOpen, onClose, onAddStop, isSubmitting }) => {
   const [formData, setFormData] = useState({
+    cityId: '',
     cityName: '',
     country: '',
     startDate: '',
     endDate: '',
     notes: '',
   });
+
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState('');
+
+  const cityInputRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (cityInputRef.current && !cityInputRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -21,10 +41,51 @@ const AddDestinationModal = ({ isOpen, onClose, onAddStop, isSubmitting }) => {
     if (error) setError('');
   };
 
+  const handleCityNameChange = async (e) => {
+    const value = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      cityName: value,
+      cityId: '', // Reset cityId when user changes query text
+      country: '', // Reset country
+    }));
+    setError('');
+
+    if (!value.trim()) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const results = await cityService.searchCities(value);
+      setSuggestions(results || []);
+      setShowSuggestions(true);
+    } catch (err) {
+      console.error('Failed to search cities:', err);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSelectSuggestion = (city) => {
+    setFormData((prev) => ({
+      ...prev,
+      cityId: city.id,
+      cityName: city.name,
+      country: city.country || '',
+    }));
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setError('');
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.cityName.trim()) {
-      setError('City name is required.');
+
+    if (!formData.cityId) {
+      setError('Please select a city from the suggestions.');
       return;
     }
 
@@ -62,21 +123,66 @@ const AddDestinationModal = ({ isOpen, onClose, onAddStop, isSubmitting }) => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="City / Location Name"
-              name="cityName"
-              placeholder="e.g. Kyoto"
-              leftIcon={MapPin}
-              value={formData.cityName}
-              onChange={handleChange}
-              required
-            />
+            <div className="relative" ref={cityInputRef}>
+              <Input
+                label="City / Location Name"
+                name="cityName"
+                placeholder="Search e.g. Kyoto"
+                leftIcon={MapPin}
+                value={formData.cityName}
+                onChange={handleCityNameChange}
+                onFocus={() => {
+                  if (formData.cityName.trim()) {
+                    setShowSuggestions(true);
+                  }
+                }}
+                required
+                autoComplete="off"
+              />
+              
+              {showSuggestions && (
+                <div className="absolute left-0 right-0 mt-1 bg-slate-950 border border-slate-800 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto divide-y divide-slate-900">
+                  {isSearching ? (
+                    <div className="p-3 text-xs text-slate-500 flex items-center gap-2">
+                      <span className="inline-block w-3.5 h-3.5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+                      Searching cities...
+                    </div>
+                  ) : suggestions.length > 0 ? (
+                    suggestions.map((city) => (
+                      <button
+                        key={city.id}
+                        type="button"
+                        onClick={() => handleSelectSuggestion(city)}
+                        className="w-full text-left px-4 py-2.5 hover:bg-slate-900 transition-colors text-xs text-slate-200 flex items-center justify-between"
+                      >
+                        <div>
+                          <span className="font-bold text-white">{city.name}</span>
+                          {city.country && <span className="text-slate-400 font-medium ml-1">({city.country})</span>}
+                        </div>
+                        {city.region && (
+                          <span className="text-[10px] bg-slate-900 border border-slate-800/80 px-1.5 py-0.5 rounded text-slate-400">
+                            {city.region}
+                          </span>
+                        )}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="p-3 text-xs text-slate-500 text-center">
+                      No cities found
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <Input
               label="Country"
               name="country"
-              placeholder="e.g. Japan"
+              placeholder="Country will pre-fill"
               value={formData.country}
               onChange={handleChange}
+              readOnly
+              className="bg-slate-950/40 text-slate-400 cursor-not-allowed"
             />
           </div>
 
