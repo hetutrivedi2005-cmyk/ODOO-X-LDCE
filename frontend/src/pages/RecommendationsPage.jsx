@@ -397,10 +397,13 @@ const RecommendationsPage = () => {
                                 />
                               ))}
                             </div>
+                            <span className="block text-[10px] font-semibold text-slate-400 mt-1 text-left">
+                              {item.popularity ? `${(item.popularity / 20).toFixed(1)} / 5` : 'N/A'}
+                            </span>
                           </div>
                           <div className="text-right">
                             <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1">Cost Level</span>
-                            <CostDisplay costIndex={displayCity.costIndex} />
+                            <CostDisplay costIndex={displayCity.costIndex} alignRight />
                           </div>
                         </div>
 

@@ -97,12 +97,15 @@ export const DestinationCard = ({
 
         <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-800/60">
           <div>
-            <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1">Popularity</span>
+            <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1">Trip Rating</span>
             {renderStars(popularity)}
+            <span className="block text-[10px] font-semibold text-slate-400 mt-1 text-left">
+              {city.popularity ? `${(city.popularity / 20).toFixed(1)} / 5` : 'N/A'}
+            </span>
           </div>
           <div className="text-right">
-            <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1">Cost Index</span>
-            <CostDisplay costIndex={costIndex} />
+            <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1">Cost Level</span>
+            <CostDisplay costIndex={costIndex} alignRight />
           </div>
         </div>
 
