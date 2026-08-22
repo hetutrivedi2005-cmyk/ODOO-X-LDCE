@@ -122,7 +122,7 @@ const MOCK_CITIES = [
     region: 'Africa',
     costIndex: 20,
     popularity: 65,
-    image: 'https://images.unsplash.com/photo-1572252009286-268acec5a0af?auto=format&fit=crop&w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=600&q=80',
     description: 'Cairo, Egypt\'s sprawling capital, is set on the Nile River. At its heart is Tahrir Square and the vast Egyptian Museum, housing a trove of antiquities including royal mummies and gilded King Tutankhamun artifacts.',
     currency: 'EGP',
     language: 'Arabic',

@@ -116,7 +116,7 @@ const STATIC_CITY_METADATA = {
     duration: 3, // 1-3 days
     costIndex: 20,
     popularity: 65,
-    image: 'https://images.unsplash.com/photo-1572252009286-268acec5a0af?auto=format&fit=crop&w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=600&q=80',
     description: 'Cairo, Egypt\'s sprawling capital, is set on the Nile River. At its heart is Tahrir Square.',
     currency: 'EGP',
     language: 'Arabic'
