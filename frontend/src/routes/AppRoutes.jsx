@@ -10,6 +10,7 @@ import TripDetailsPage from '../pages/TripDetailsPage';
 import EditTripPage from '../pages/EditTripPage';
 import ItineraryPage from '../pages/ItineraryPage';
 import ExplorePage from '../pages/ExplorePage';
+import RecommendationsPage from '../pages/RecommendationsPage';
 import ProfilePage from '../pages/ProfilePage';
 import LoginPage from '../pages/LoginPage';
 import SignupPage from '../pages/SignupPage';
@@ -37,6 +38,7 @@ const AppRoutes = () => {
           <Route path="/trips/:id/edit" element={<EditTripPage />} />
           <Route path="/trips/:id/itinerary" element={<ItineraryPage />} />
           <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/explore/recommendations" element={<RecommendationsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Search } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
 import DestinationCard from '../components/travel/DestinationCard';
@@ -11,6 +12,7 @@ import AddToTripModal from '../components/travel/AddToTripModal';
 import * as cityService from '../services/cityService';
 
 const ExplorePage = () => {
+  const navigate = useNavigate();
   // Search & Filter state
   const [searchText, setSearchText] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -88,6 +90,21 @@ const ExplorePage = () => {
     >
       <div className="flex flex-col gap-6">
         
+        {/* Unified Tab Navigation */}
+        <div className="flex border-b border-slate-800">
+          <button
+            className="py-3 px-6 text-sm font-semibold border-b-2 border-teal-500 text-teal-400 cursor-pointer"
+          >
+            Search Destinations
+          </button>
+          <button
+            onClick={() => navigate('/explore/recommendations')}
+            className="py-3 px-6 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+          >
+            Smart Recommendations
+          </button>
+        </div>
+
         {/* Search Bar */}
         <div className="w-full">
           <SearchBar

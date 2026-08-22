@@ -286,3 +286,102 @@ export const addCityToTrip = async (tripId, cityId) => {
     return { success: true, message: 'City added to trip successfully.' };
   }
 };
+
+export const getRecommendations = async (params = {}) => {
+  try {
+    const response = await api.get('/destinations/recommendations', { params });
+    const rawRecommendations = response.data?.data?.recommendations || response.data;
+    if (!Array.isArray(rawRecommendations)) {
+      throw new Error('Expected array response for recommendations');
+    }
+    return rawRecommendations;
+  } catch (error) {
+    console.warn('[cityService] getRecommendations live API failed. Reason:', error.message || error);
+    return getLocalMockRecommendations(params);
+  }
+};
+
+const getLocalMockRecommendations = async (params = {}) => {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  const { interest, budget, duration } = params;
+
+  const metadata = {
+    'c1': { interests: ['culture', 'food', 'history'], budget: 'high', duration: 4, popularity: 95 },
+    'c2': { interests: ['culture', 'food', 'adventure'], budget: 'high', duration: 5, popularity: 98 },
+    'c3': { interests: ['culture', 'history', 'nature'], budget: 'medium', duration: 3, popularity: 82 },
+    'c4': { interests: ['history', 'culture', 'food'], budget: 'medium', duration: 4, popularity: 88 },
+    'c5': { interests: ['culture', 'history', 'food'], budget: 'medium', duration: 3, popularity: 84 },
+    'c6': { interests: ['food', 'culture', 'beach'], budget: 'low', duration: 3, popularity: 78 },
+    'c7': { interests: ['history', 'culture', 'food'], budget: 'low', duration: 3, popularity: 75 },
+    'c8': { interests: ['culture', 'food', 'adventure'], budget: 'high', duration: 5, popularity: 96 },
+    'c9': { interests: ['adventure', 'food', 'beach'], budget: 'high', duration: 4, popularity: 92 },
+    'c10': { interests: ['history', 'culture', 'nature'], budget: 'low', duration: 3, popularity: 65 }
+  };
+
+  const scored = MOCK_CITIES.map(city => {
+    const meta = metadata[city.id] || { interests: ['culture'], budget: 'medium', duration: 3, popularity: 70 };
+    let score = 0;
+    const reasons = [];
+
+    if (interest && meta.interests.includes(interest.toLowerCase())) {
+      score += 3;
+      reasons.push(`Matches your ${interest} preference`);
+    }
+
+    if (budget && meta.budget.toLowerCase() === budget.toLowerCase()) {
+      score += 2;
+      reasons.push(`Fits your ${budget} budget preference`);
+    }
+
+    if (duration) {
+      let isDurationMatch = false;
+      if (duration === '1-3 days' && meta.duration <= 3) {
+        isDurationMatch = true;
+      } else if (duration === '4-7 days' && meta.duration >= 4 && meta.duration <= 7) {
+        isDurationMatch = true;
+      } else if (duration === '8+ days' && meta.duration >= 8) {
+        isDurationMatch = true;
+      }
+
+      if (isDurationMatch) {
+        score += 2;
+        reasons.push(`Excellent fit for a ${duration} trip duration`);
+      }
+    }
+
+    if (meta.popularity >= 80) {
+      score += 1;
+      reasons.push('Highly popular destination among travelers');
+    }
+
+    if (meta.popularity >= 90) {
+      score += 1;
+      reasons.push('Top-rated destination with excellent feedback');
+    }
+
+    if (reasons.length === 0) {
+      reasons.push('Scenic city with rich culture and sights');
+    }
+
+    return {
+      ...city,
+      score,
+      reason: reasons[0],
+      reasons
+    };
+  });
+
+  scored.sort((a, b) => {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+    const popA = metadata[a.id]?.popularity || 50;
+    const popB = metadata[b.id]?.popularity || 50;
+    if (popB !== popA) {
+      return popB - popA;
+    }
+    return a.name.localeCompare(b.name);
+  });
+
+  return scored;
+};
