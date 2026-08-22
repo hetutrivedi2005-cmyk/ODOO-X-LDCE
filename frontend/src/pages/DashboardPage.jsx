@@ -5,9 +5,13 @@ import PageContainer from '../components/layout/PageContainer';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
+import { useAuth } from '../context/AuthContext';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const firstName = user?.name ? user.name.split(' ')[0] : 'Traveler';
 
   const stats = [
     { title: 'Upcoming Trips', value: '2', icon: Luggage, color: 'text-teal-400', badge: 'Active' },
@@ -17,7 +21,7 @@ const DashboardPage = () => {
 
   return (
     <PageContainer
-      title="Welcome back, Jane! 👋"
+      title={`Welcome back, ${firstName}! 👋`}
       subtitle="Here is an overview of your upcoming adventures and travel insights."
       actions={
         <Button variant="primary" leftIcon={Plus} onClick={() => navigate('/trips/new')}>
@@ -26,7 +30,7 @@ const DashboardPage = () => {
       }
     >
       {/* Stats Grid */}
-      <div className="grid grid-[#1] sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {stats.map((stat, idx) => {
           const Icon = stat.icon;
           return (

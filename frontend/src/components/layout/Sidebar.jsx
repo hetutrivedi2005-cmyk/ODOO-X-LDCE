@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Luggage,
@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { useAuth } from '../../context/AuthContext';
 
 export const navItems = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -24,6 +25,24 @@ export const navItems = [
 
 const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const getInitials = (name) => {
+    if (!name) return 'GT';
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <aside
@@ -109,27 +128,27 @@ const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
             isCollapsed && 'justify-center'
           )}
         >
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-slate-700 to-slate-600 flex items-center justify-center font-bold text-white shrink-0 border border-slate-600">
-            JD
+          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-teal-500 to-emerald-500 flex items-center justify-center font-bold text-slate-950 shrink-0 shadow-md">
+            {getInitials(user?.name)}
           </div>
           {!isCollapsed && (
             <div className="flex flex-col min-w-0 flex-1">
               <span className="text-xs font-semibold text-white truncate group-hover:text-teal-300 transition-colors">
-                Jane Doe
+                {user?.name || 'Traveler'}
               </span>
-              <span className="text-[11px] text-slate-400 truncate">jane.doe@example.com</span>
+              <span className="text-[11px] text-slate-400 truncate">{user?.email || 'user@example.com'}</span>
             </div>
           )}
         </NavLink>
 
         {!isCollapsed && (
-          <NavLink
-            to="/login"
-            className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+          <button
+            onClick={handleLogout}
+            className="w-full mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out</span>
-          </NavLink>
+          </button>
         )}
       </div>
     </aside>

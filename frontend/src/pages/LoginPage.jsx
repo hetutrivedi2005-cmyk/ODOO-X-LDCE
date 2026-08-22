@@ -1,18 +1,72 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, LogIn, ArrowRight } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
+import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const location = useLocation();
+  const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const from = location.state?.from?.pathname || '/dashboard';
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email address is required.';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address.';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Password is required.';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+    if (serverError) {
+      setServerError('');
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Foundation mock auth navigation
-    navigate('/dashboard');
+    setServerError('');
+
+    if (!validate()) return;
+
+    setIsSubmitting(true);
+
+    try {
+      await login({
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+      navigate(from, { replace: true });
+    } catch (err) {
+      console.error('Login error:', err);
+      setServerError(err.message || 'Invalid email or password. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -22,45 +76,75 @@ const LoginPage = () => {
         <p className="text-xs text-slate-400">Sign in to access your travel itineraries & trips</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      {serverError && (
+        <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-2.5 text-xs text-rose-400 animate-fade-in">
+          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+          <span className="leading-relaxed">{serverError}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <Input
           label="Email address"
+          name="email"
           type="email"
           placeholder="name@example.com"
           leftIcon={Mail}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={formData.email}
+          onChange={handleChange}
+          error={errors.email}
+          disabled={isSubmitting}
           required
         />
         <Input
           label="Password"
+          name="password"
           type="password"
           placeholder="••••••••"
           leftIcon={Lock}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={formData.password}
+          onChange={handleChange}
+          error={errors.password}
+          disabled={isSubmitting}
           required
         />
 
         <div className="flex items-center justify-between text-xs">
-          <label className="flex items-center gap-2 text-slate-400 cursor-pointer">
-            <input type="checkbox" className="rounded border-slate-700 bg-slate-900 text-teal-500 focus:ring-teal-500" />
+          <label className="flex items-center gap-2 text-slate-400 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              className="rounded border-slate-700 bg-slate-900 text-teal-500 focus:ring-teal-500/20"
+            />
             Remember me
           </label>
-          <a href="#" className="text-teal-400 hover:underline font-medium">
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              alert('Password reset link feature is currently in development.');
+            }}
+            className="text-teal-400 hover:underline font-medium"
+          >
             Forgot password?
           </a>
         </div>
 
-        <Button variant="primary" type="submit" className="w-full" rightIcon={ArrowRight}>
-          Sign In
+        <Button
+          variant="primary"
+          type="submit"
+          className="w-full"
+          rightIcon={ArrowRight}
+          isLoading={isSubmitting}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Signing in...' : 'Sign In'}
         </Button>
       </form>
 
       <div className="text-center text-xs text-slate-400 pt-2 border-t border-slate-800">
         Don't have an account yet?{' '}
         <Link to="/signup" className="text-teal-400 font-semibold hover:underline">
-          Sign up
+          Create account
         </Link>
       </div>
     </div>

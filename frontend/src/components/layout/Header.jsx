@@ -1,11 +1,26 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Search, Bell, Plus, Menu, Globe, Compass } from 'lucide-react';
+import { Search, Bell, Plus, Menu, Globe } from 'lucide-react';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
+import { useAuth } from '../../context/AuthContext';
 
 const Header = ({ onOpenMobileMenu }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const getInitials = (name) => {
+    if (!name) return 'GT';
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const firstName = user?.name ? user.name.split(' ')[0] : 'Traveler';
 
   return (
     <header className="h-16 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-20 px-4 md:px-6 flex items-center justify-between gap-4">
@@ -62,9 +77,9 @@ const Header = ({ onOpenMobileMenu }) => {
           className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full border border-slate-800 hover:border-slate-700 bg-slate-900/80 hover:bg-slate-800 transition-all"
         >
           <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center font-bold text-xs text-slate-950">
-            JD
+            {getInitials(user?.name)}
           </div>
-          <span className="hidden md:inline text-xs font-medium text-slate-200">Jane</span>
+          <span className="hidden md:inline text-xs font-medium text-slate-200">{firstName}</span>
           <Badge variant="primary" className="hidden lg:inline-flex text-[10px] py-0 px-1.5">
             Active
           </Badge>

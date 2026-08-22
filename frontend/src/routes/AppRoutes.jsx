@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import AuthLayout from '../layouts/AuthLayout';
+import ProtectedRoute from '../components/layout/ProtectedRoute';
 import DashboardPage from '../pages/DashboardPage';
 import TripsPage from '../pages/TripsPage';
 import NewTripPage from '../pages/NewTripPage';
@@ -17,19 +18,21 @@ const AppRoutes = () => {
       {/* Root redirect */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-      {/* Auth Shell Routes */}
+      {/* Unprotected Auth Layout Routes */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
       </Route>
 
-      {/* Main Application Shell Routes */}
-      <Route element={<MainLayout />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/trips" element={<TripsPage />} />
-        <Route path="/trips/new" element={<NewTripPage />} />
-        <Route path="/explore" element={<ExplorePage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+      {/* Protected Main Application Routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<MainLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/trips" element={<TripsPage />} />
+          <Route path="/trips/new" element={<NewTripPage />} />
+          <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
       </Route>
 
       {/* Catch-all 404 Route */}

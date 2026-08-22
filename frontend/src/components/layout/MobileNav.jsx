@@ -1,11 +1,31 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { X, Globe, LogOut, Sparkles } from 'lucide-react';
 import { navItems } from './Sidebar';
 import { cn } from '../../utils/cn';
+import { useAuth } from '../../context/AuthContext';
 
 const MobileNav = ({ isOpen, onClose }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    onClose();
+    logout();
+    navigate('/login');
+  };
+
+  const getInitials = (name) => {
+    if (!name) return 'GT';
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <>
@@ -94,21 +114,20 @@ const MobileNav = ({ isOpen, onClose }) => {
                 className="flex items-center gap-3 p-2 rounded-xl bg-slate-900"
               >
                 <div className="w-9 h-9 rounded-full bg-teal-500 text-slate-950 flex items-center justify-center font-bold text-xs">
-                  JD
+                  {getInitials(user?.name)}
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-white">Jane Doe</span>
-                  <span className="text-[10px] text-slate-400">jane.doe@example.com</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-semibold text-white truncate">{user?.name || 'Traveler'}</span>
+                  <span className="text-[10px] text-slate-400 truncate">{user?.email || 'user@example.com'}</span>
                 </div>
               </NavLink>
-              <NavLink
-                to="/login"
-                onClick={onClose}
-                className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10"
+              <button
+                onClick={handleLogout}
+                className="w-full mt-3 flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Sign Out</span>
-              </NavLink>
+              </button>
             </div>
           </div>
         </div>
