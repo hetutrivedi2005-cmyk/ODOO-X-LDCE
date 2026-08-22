@@ -100,26 +100,26 @@ const AddDestinationModal = ({ isOpen, onClose, onAddStop, isSubmitting }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm animate-fade-in" onClick={onClose} />
+      <div className="fixed inset-0 bg-[#0f172a]/35 backdrop-blur-xs animate-fade-in" onClick={onClose} />
 
       {/* Modal Dialog */}
       <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl z-10 space-y-4 animate-scale-in">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
+            <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-500">
               <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white tracking-tight">Add Destination Stop</h3>
-              <p className="text-xs text-slate-400">Add a new city or location to this trip</p>
+              <h3 className="text-base font-bold text-slate-100 tracking-tight">Add Destination Stop</h3>
+              <p className="text-xs text-slate-350">Add a new city or location to this trip</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800">
+          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-850">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {error && <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-400">{error}</div>}
+        {error && <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/35 text-xs text-rose-500">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -141,9 +141,9 @@ const AddDestinationModal = ({ isOpen, onClose, onAddStop, isSubmitting }) => {
               />
               
               {showSuggestions && (
-                <div className="absolute left-0 right-0 mt-1 bg-slate-950 border border-slate-800 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto divide-y divide-slate-900">
+                <div className="absolute left-0 right-0 mt-1 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto divide-y divide-slate-800">
                   {isSearching ? (
-                    <div className="p-3 text-xs text-slate-500 flex items-center gap-2">
+                    <div className="p-3 text-xs text-slate-450 flex items-center gap-2">
                       <span className="inline-block w-3.5 h-3.5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
                       Searching cities...
                     </div>
@@ -153,21 +153,21 @@ const AddDestinationModal = ({ isOpen, onClose, onAddStop, isSubmitting }) => {
                         key={city.id}
                         type="button"
                         onClick={() => handleSelectSuggestion(city)}
-                        className="w-full text-left px-4 py-2.5 hover:bg-slate-900 transition-colors text-xs text-slate-200 flex items-center justify-between"
+                        className="w-full text-left px-4 py-2.5 hover:bg-slate-850 transition-colors text-xs text-slate-300 flex items-center justify-between"
                       >
                         <div>
-                          <span className="font-bold text-white">{city.name}</span>
-                          {city.country && <span className="text-slate-400 font-medium ml-1">({city.country})</span>}
+                          <span className="font-bold text-slate-100">{city.name}</span>
+                          {city.country && <span className="text-slate-450 font-medium ml-1">({city.country})</span>}
                         </div>
                         {city.region && (
-                          <span className="text-[10px] bg-slate-900 border border-slate-800/80 px-1.5 py-0.5 rounded text-slate-400">
+                          <span className="text-[10px] bg-slate-950 border border-slate-800 px-1.5 py-0.5 rounded text-slate-450 font-bold">
                             {city.region}
                           </span>
                         )}
                       </button>
                     ))
                   ) : (
-                    <div className="p-3 text-xs text-slate-500 text-center">
+                    <div className="p-3 text-xs text-slate-450 text-center">
                       No cities found
                     </div>
                   )}
@@ -182,7 +182,7 @@ const AddDestinationModal = ({ isOpen, onClose, onAddStop, isSubmitting }) => {
               value={formData.country}
               onChange={handleChange}
               readOnly
-              className="bg-slate-950/40 text-slate-400 cursor-not-allowed"
+              className="bg-slate-950 text-slate-450 cursor-not-allowed"
             />
           </div>
 

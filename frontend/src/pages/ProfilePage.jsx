@@ -149,13 +149,13 @@ const ProfilePage = () => {
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Profile Card */}
-        <Card className="text-center p-6 flex flex-col items-center bg-slate-900 border-slate-800">
+        <Card className="text-center p-6 flex flex-col items-center bg-slate-900 border-slate-800 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
           {/* Avatar Container */}
           <div className="relative group w-24 h-24 mb-4">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full h-full rounded-full overflow-hidden border-2 border-slate-700 bg-slate-950 flex items-center justify-center shadow-xl shadow-teal-500/10 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-300 relative group-hover:border-teal-400 cursor-pointer"
+              className="w-full h-full rounded-full overflow-hidden border-2 border-slate-800 bg-slate-950 flex items-center justify-center shadow-xl shadow-teal-500/5 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-300 relative group-hover:border-teal-500 cursor-pointer"
               aria-label="Upload profile photo"
             >
               {avatarPreview ? (
@@ -165,7 +165,7 @@ const ProfilePage = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-tr from-teal-500 to-emerald-450 flex items-center justify-center text-slate-950 font-black text-3xl">
+                <div className="w-full h-full bg-gradient-to-tr from-teal-500 to-emerald-450 flex items-center justify-center text-white font-black text-3xl">
                   {getInitials(formData.name || user?.name)}
                 </div>
               )}
@@ -186,8 +186,8 @@ const ProfilePage = () => {
             />
           </div>
 
-          <h3 className="text-lg font-bold text-white leading-tight">{formData.name || user?.name || 'Traveler'}</h3>
-          <p className="text-xs text-slate-400 mt-1">{user?.email || 'user@example.com'}</p>
+          <h3 className="text-lg font-bold text-slate-100 leading-tight">{formData.name || user?.name || 'Traveler'}</h3>
+          <p className="text-xs text-slate-350 mt-1">{user?.email || 'user@example.com'}</p>
           
           <div className="mt-3">
             <Badge variant="primary">Pro GlobeTrotter</Badge>
@@ -207,7 +207,7 @@ const ProfilePage = () => {
               <button
                 type="button"
                 onClick={handleRemoveAvatar}
-                className="text-xs font-semibold text-rose-450 hover:text-rose-400 transition-colors py-1 cursor-pointer"
+                className="text-xs font-semibold text-rose-500 hover:text-rose-600 transition-colors py-1 cursor-pointer"
               >
                 Remove Photo
               </button>
@@ -216,10 +216,10 @@ const ProfilePage = () => {
         </Card>
 
         {/* Account Details Form */}
-        <Card className="md:col-span-2 bg-slate-900 border-slate-800">
+        <Card className="md:col-span-2 bg-slate-900 border-slate-800 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
           <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
-            <CardDescription>Update your personal details and travel profile.</CardDescription>
+            <CardTitle className="text-slate-100">Personal Information</CardTitle>
+            <CardDescription className="text-slate-350">Update your personal details and travel profile.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -249,7 +249,7 @@ const ProfilePage = () => {
                   leftIcon={Mail}
                   readOnly
                   disabled
-                  className="bg-slate-950/40 text-slate-500 cursor-not-allowed border-slate-800/50"
+                  className="bg-slate-950 text-slate-450 cursor-not-allowed border-slate-800"
                   helperText="Email address cannot be changed."
                 />
               </div>
