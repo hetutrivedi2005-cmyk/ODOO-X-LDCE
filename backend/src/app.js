@@ -4,6 +4,8 @@ const cors = require('cors');
 const healthRouter = require('./routes/health');
 const { notFoundHandler, globalErrorHandler } = require('./middleware/errorHandler');
 
+const authRouter = require('./routes/auth.routes');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -19,6 +21,7 @@ app.use(express.json());
 
 // Main application API routes
 app.use('/api', healthRouter);
+app.use('/api/auth', authRouter);
 
 // Central 404 handler for unmatched routes
 app.use(notFoundHandler);

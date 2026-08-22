@@ -74,7 +74,9 @@ Start the Express development server (runs on port `5000` by default):
 npm run dev
 ```
 
-## Health Endpoint
+## API Endpoints
+
+### Health Endpoint
 
 - **URL**: `http://localhost:5000/api/health`
 - **Method**: `GET`
@@ -83,5 +85,95 @@ npm run dev
   {
     "success": true,
     "message": "GlobeTrotter API is running"
+  }
+  ```
+
+### Authentication Endpoints
+
+All authentication endpoints are located under `/api/auth`.
+
+#### 1. Register User
+- **URL**: `/api/auth/register`
+- **Method**: `POST`
+- **Headers**: `Content-Type: application/json`
+- **Request Body**:
+  ```json
+  {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "password123"
+  }
+  ```
+- **Success Response (201 Created)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "user": {
+        "id": "user-uuid-string",
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "token": "JWT_TOKEN_STRING"
+    }
+  }
+  ```
+
+#### 2. Login User
+- **URL**: `/api/auth/login`
+- **Method**: `POST`
+- **Headers**: `Content-Type: application/json`
+- **Request Body**:
+  ```json
+  {
+    "email": "john@example.com",
+    "password": "password123"
+  }
+  ```
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "user": {
+        "id": "user-uuid-string",
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "token": "JWT_TOKEN_STRING"
+    }
+  }
+  ```
+- **Error Response (401 Unauthorized)**:
+  ```json
+  {
+    "success": false,
+    "message": "Invalid email or password"
+  }
+  ```
+
+#### 3. Current User Profile
+- **URL**: `/api/auth/me`
+- **Method**: `GET`
+- **Headers**:
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "user": {
+        "id": "user-uuid-string",
+        "name": "John Doe",
+        "email": "john@example.com"
+      }
+    }
+  }
+  ```
+- **Error Response (401/400 Unauthorized/Bad Token)**:
+  ```json
+  {
+    "success": false,
+    "message": "Authentication required"
   }
   ```
