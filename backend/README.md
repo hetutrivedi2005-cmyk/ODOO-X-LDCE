@@ -177,3 +177,194 @@ All authentication endpoints are located under `/api/auth`.
     "message": "Authentication required"
   }
   ```
+
+### Trip Management Endpoints
+
+All trip management endpoints are located under `/api/trips` and require authentication.
+
+#### 1. Create Trip
+- **URL**: `/api/trips`
+- **Method**: `POST`
+- **Headers**:
+  - `Content-Type: application/json`
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Request Body**:
+  ```json
+  {
+    "name": "Europe Trip",
+    "description": "My summer Europe trip",
+    "startDate": "2026-09-01",
+    "endDate": "2026-09-15",
+    "coverImage": "https://example.com/cover.jpg"
+  }
+  ```
+- **Success Response (201 Created)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "trip": {
+        "id": "trip-uuid-string",
+        "name": "Europe Trip",
+        "description": "My summer Europe trip",
+        "startDate": "2026-09-01T00:00:00.000Z",
+        "endDate": "2026-09-15T00:00:00.000Z",
+        "coverImage": "https://example.com/cover.jpg",
+        "userId": "user-uuid-string",
+        "createdAt": "2026-08-22T06:00:00.000Z",
+        "updatedAt": "2026-08-22T06:00:00.000Z"
+      }
+    }
+  }
+  ```
+
+#### 2. Get My Trips
+- **URL**: `/api/trips`
+- **Method**: `GET`
+- **Headers**:
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "trips": [
+        {
+          "id": "trip-uuid-string",
+          "name": "Europe Trip",
+          "description": "My summer Europe trip",
+          "startDate": "2026-09-01T00:00:00.000Z",
+          "endDate": "2026-09-15T00:00:00.000Z",
+          "coverImage": "https://example.com/cover.jpg"
+        }
+      ]
+    }
+  }
+  ```
+
+#### 3. Get Single Trip (Details with Stops & Cities)
+- **URL**: `/api/trips/:id`
+- **Method**: `GET`
+- **Headers**:
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "trip": {
+        "id": "trip-uuid-string",
+        "name": "Europe Trip",
+        "description": "My summer Europe trip",
+        "startDate": "2026-09-01T00:00:00.000Z",
+        "endDate": "2026-09-15T00:00:00.000Z",
+        "coverImage": "https://example.com/cover.jpg",
+        "stops": [
+          {
+            "id": "stop-uuid-string",
+            "tripId": "trip-uuid-string",
+            "cityId": "city-uuid-string",
+            "startDate": "2026-09-03T00:00:00.000Z",
+            "endDate": "2026-09-05T00:00:00.000Z",
+            "order": 1,
+            "city": {
+              "id": "city-uuid-string",
+              "name": "Paris",
+              "country": "France",
+              "lat": 48.8566,
+              "lng": 2.3522
+            }
+          }
+        ]
+      }
+    }
+  }
+  ```
+
+#### 4. Update Trip
+- **URL**: `/api/trips/:id`
+- **Method**: `PUT`
+- **Headers**:
+  - `Content-Type: application/json`
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Request Body** (all fields optional):
+  ```json
+  {
+    "name": "Updated Europe Trip",
+    "description": "New description"
+  }
+  ```
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "trip": {
+        "id": "trip-uuid-string",
+        "name": "Updated Europe Trip",
+        "description": "New description",
+        "startDate": "2026-09-01T00:00:00.000Z",
+        "endDate": "2026-09-15T00:00:00.000Z"
+      }
+    }
+  }
+  ```
+
+#### 5. Delete Trip
+- **URL**: `/api/trips/:id`
+- **Method**: `DELETE`
+- **Headers**:
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "Trip deleted successfully"
+  }
+  ```
+
+#### 6. Add City Stop to Trip
+- **URL**: `/api/trips/:tripId/stops`
+- **Method**: `POST`
+- **Headers**:
+  - `Content-Type: application/json`
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Request Body**:
+  ```json
+  {
+    "cityId": "city-uuid-string",
+    "startDate": "2026-09-03",
+    "endDate": "2026-09-05"
+  }
+  ```
+- **Success Response (201 Created)**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "stop": {
+        "id": "stop-uuid-string",
+        "tripId": "trip-uuid-string",
+        "cityId": "city-uuid-string",
+        "startDate": "2026-09-03T00:00:00.000Z",
+        "endDate": "2026-09-05T00:00:00.000Z",
+        "order": 1,
+        "createdAt": "2026-08-22T06:00:00.000Z",
+        "updatedAt": "2026-08-22T06:00:00.000Z"
+      }
+    }
+  }
+  ```
+
+#### 7. Remove City Stop from Trip
+- **URL**: `/api/trips/:tripId/stops/:stopId`
+- **Method**: `DELETE`
+- **Headers**:
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "City removed from trip"
+  }
+  ```

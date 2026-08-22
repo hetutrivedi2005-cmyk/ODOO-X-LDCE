@@ -19,10 +19,11 @@ model User {
 
 model Trip {
   id          String        @id @default(uuid())
-  title       String
+  name        String
   description String?
   startDate   DateTime?
   endDate     DateTime?
+  coverImage  String?
   userId      String
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   stops       TripStop[]
@@ -61,9 +62,9 @@ model TripStop {
   trip                Trip                @relation(fields: [tripId], references: [id], onDelete: Cascade)
   cityId              String
   city                City                @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  sequence            Int
-  arrivalDate         DateTime?
-  departureDate       DateTime?
+  order               Int
+  startDate           DateTime?
+  endDate             DateTime?
   itineraryActivities ItineraryActivity[]
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
