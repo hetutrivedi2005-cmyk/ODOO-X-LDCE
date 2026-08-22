@@ -11,6 +11,7 @@ import {
   ChevronRight,
   LogOut,
   Sparkles,
+  BarChart3,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useAuth } from '../../context/AuthContext';
@@ -20,6 +21,7 @@ export const navItems = [
   { name: 'My Trips', path: '/trips', icon: Luggage },
   { name: 'Plan New Trip', path: '/trips/new', icon: PlusCircle, highlight: true },
   { name: 'Explore', path: '/explore', icon: Compass },
+  { name: 'Reports & Analytics', path: '/reports', icon: BarChart3 },
   { name: 'Profile', path: '/profile', icon: User },
 ];
 

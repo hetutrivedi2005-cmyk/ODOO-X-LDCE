@@ -14,6 +14,7 @@ import TripHistoryPage from '../pages/TripHistoryPage';
 import ExplorePage from '../pages/ExplorePage';
 import RecommendationsPage from '../pages/RecommendationsPage';
 import PublicTripView from '../pages/PublicTripView';
+import ReportsPage from '../pages/ReportsPage';
 import ProfilePage from '../pages/ProfilePage';
 import LoginPage from '../pages/LoginPage';
 import SignupPage from '../pages/SignupPage';
@@ -47,6 +48,7 @@ const AppRoutes = () => {
           <Route path="/trips/:id/history" element={<TripHistoryPage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/explore/recommendations" element={<RecommendationsPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>

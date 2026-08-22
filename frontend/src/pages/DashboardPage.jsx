@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Compass, Luggage, MapPin, Plus, Sparkles, TrendingUp, Calendar } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
@@ -6,6 +6,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../co
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import { useAuth } from '../context/AuthContext';
+import reportService from '../services/reportService';
+import tripService from '../services/tripService';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -13,10 +15,60 @@ const DashboardPage = () => {
 
   const firstName = user?.name ? user.name.split(' ')[0] : 'Traveler';
 
+  const [overview, setOverview] = useState(null);
+  const [trips, setTrips] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        const [overviewRes, tripsRes] = await Promise.all([
+          reportService.getOverview(),
+          tripService.getTrips()
+        ]);
+        setOverview(overviewRes);
+        setTrips(tripsRes || []);
+      } catch (err) {
+        console.error('Failed to load dashboard stats:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadDashboardData();
+  }, []);
+
+  const formatSpendingKpi = (spendList) => {
+    if (!spendList || spendList.length === 0) return '₹0';
+    return spendList.map(s => {
+      const symbol = s.currency === 'USD' ? '$' : s.currency === 'EUR' ? '€' : '₹';
+      return `${symbol}${Math.round(s.amount).toLocaleString()}`;
+    }).join(' / ');
+  };
+
+  const upcomingTrip = trips.find(t => {
+    if (!t.startDate) return false;
+    return new Date(t.startDate) > new Date();
+  });
+
+  const formatDateRange = (start, end) => {
+    if (!start && !end) return '';
+    const sStr = start ? new Date(start).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) : '';
+    const eStr = end ? new Date(end).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    if (sStr && eStr) return `${sStr} - ${eStr}`;
+    return sStr || eStr;
+  };
+
+  const calculateDuration = (start, end) => {
+    if (!start || !end) return '';
+    const diff = new Date(end).getTime() - new Date(start).getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
+    return `${days} Day${days === 1 ? '' : 's'}`;
+  };
+
   const stats = [
-    { title: 'Upcoming Trips', value: '2', icon: Luggage, color: 'text-teal-400', badge: 'Active' },
-    { title: 'Destinations Visited', value: '14', icon: MapPin, color: 'text-emerald-400', badge: 'Lifetime' },
-    { title: 'Travel Budget Saved', value: '$1,250', icon: TrendingUp, color: 'text-amber-400', badge: '+12%' },
+    { title: 'Upcoming Trips', value: overview ? overview.upcomingTrips.toString() : '0', icon: Luggage, color: 'text-teal-400', badge: 'Upcoming' },
+    { title: 'Destinations Visited', value: overview ? overview.totalDestinations.toString() : '0', icon: MapPin, color: 'text-emerald-400', badge: 'Lifetime' },
+    { title: 'Total Travel Budget Spent', value: overview ? formatSpendingKpi(overview.totalSpendingByCurrency) : '₹0', icon: TrendingUp, color: 'text-amber-400', badge: 'Spent' },
   ];
 
   return (
@@ -89,13 +141,28 @@ const DashboardPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-semibold text-white">Kyoto & Tokyo, Japan</h4>
-                <p className="text-xs text-slate-400 mt-0.5">Oct 12 - Oct 22 • 10 Days</p>
+            {isLoading ? (
+              <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2 animate-pulse">
+                <div className="h-4 w-3/4 bg-slate-900 rounded" />
+                <div className="h-3.5 w-1/2 bg-slate-900 rounded" />
               </div>
-              <Badge variant="success">Confirmed</Badge>
-            </div>
+            ) : upcomingTrip ? (
+              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-semibold text-white truncate max-w-[160px]" title={upcomingTrip.name}>
+                    {upcomingTrip.name}
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {formatDateRange(upcomingTrip.startDate, upcomingTrip.endDate)} • {calculateDuration(upcomingTrip.startDate, upcomingTrip.endDate)}
+                  </p>
+                </div>
+                <Badge variant="success">Confirmed</Badge>
+              </div>
+            ) : (
+              <div className="p-3 rounded-xl bg-slate-950/65 border border-slate-800/80 text-center text-xs text-slate-450">
+                No upcoming trips planned yet.
+              </div>
+            )}
             <Button
               variant="secondary"
               size="sm"

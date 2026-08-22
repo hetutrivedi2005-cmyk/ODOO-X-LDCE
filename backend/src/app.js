@@ -11,6 +11,7 @@ const itineraryRouter = require('./routes/itinerary.routes');
 const expenseRouter = require('./routes/expense.routes');
 const shareRouter = require('./routes/share.routes');
 const historyRouter = require('./routes/history.routes');
+const reportRouter = require('./routes/report.routes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,6 +32,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/trips', tripRouter);
 app.use('/api/destinations', recommendationRouter);
 app.use('/api', shareRouter);
+app.use('/api/reports', reportRouter);
 app.use('/api/trips', itineraryRouter);
 app.use('/api/trips', expenseRouter);
 app.use('/api/trips', historyRouter);
