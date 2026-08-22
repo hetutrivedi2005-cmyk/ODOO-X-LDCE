@@ -7,6 +7,8 @@ import { cn } from '../../utils/cn';
 export const DestinationCard = ({
   city,
   onClick,
+  onViewClick,
+  onAddToTripClick,
   className = '',
 }) => {
   const { id, name, country, region, costIndex, popularity, image } = city;
@@ -73,6 +75,35 @@ export const DestinationCard = ({
             <CostDisplay costIndex={costIndex} />
           </div>
         </div>
+
+        {(onViewClick || onAddToTripClick) && (
+          <div className="flex gap-2 mt-4 pt-4 border-t border-slate-800/60">
+            {onViewClick && (
+              <button
+                type="button"
+                className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-slate-850 hover:bg-slate-800 text-slate-350 hover:text-white border border-slate-800 hover:border-slate-700 transition-all cursor-pointer text-center active:scale-[0.98]"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewClick(id);
+                }}
+              >
+                View
+              </button>
+            )}
+            {onAddToTripClick && (
+              <button
+                type="button"
+                className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:from-teal-400 hover:to-emerald-400 shadow-md shadow-teal-500/10 hover:shadow-teal-500/20 active:scale-[0.98] transition-all cursor-pointer text-center"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToTripClick(city);
+                }}
+              >
+                Add to Trip
+              </button>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
