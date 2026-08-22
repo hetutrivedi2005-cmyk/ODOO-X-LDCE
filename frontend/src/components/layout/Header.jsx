@@ -1,13 +1,104 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Search, Bell, Plus, Menu, Globe } from 'lucide-react';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import { useAuth } from '../../context/AuthContext';
+import notificationService from '../../services/notificationService';
+import NotificationDropdown from '../notifications/NotificationDropdown';
 
 const Header = ({ onOpenMobileMenu }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const count = await notificationService.getUnreadCount();
+      setUnreadCount(count);
+    } catch (err) {
+      console.error('Failed to load unread count:', err);
+    }
+  }, []);
+
+  const fetchNotificationsList = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const list = await notificationService.getNotifications();
+      setNotifications(list);
+      const unread = list.filter((n) => !n.isRead).length;
+      setUnreadCount(unread);
+    } catch (err) {
+      console.error('Failed to load notifications list:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchUnreadCount();
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user, fetchUnreadCount]);
+
+  const handleToggleDropdown = () => {
+    if (!isDropdownOpen) {
+      fetchNotificationsList();
+    }
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleMarkRead = async (id) => {
+    try {
+      await notificationService.markAsRead(id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(prev - 1, 0));
+    } catch (err) {
+      console.error('Failed to mark read:', err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch (err) {
+      console.error('Failed to mark all read:', err);
+    }
+  };
+
+  const handleDeleteNotification = async (id) => {
+    try {
+      const noti = notifications.find((n) => n.id === id);
+      await notificationService.deleteNotification(id);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      if (noti && !noti.isRead) {
+        setUnreadCount((prev) => Math.max(prev - 1, 0));
+      }
+    } catch (err) {
+      console.error('Failed to delete notification:', err);
+    }
+  };
+
+  const handleClearAllNotifications = async () => {
+    if (!window.confirm('Clear all notifications?')) return;
+    try {
+      await notificationService.deleteAllNotifications();
+      setNotifications([]);
+      setUnreadCount(0);
+    } catch (err) {
+      console.error('Failed to clear notifications:', err);
+    }
+  };
 
   const getInitials = (name) => {
     if (!name) return 'GT';
@@ -64,12 +155,34 @@ const Header = ({ onOpenMobileMenu }) => {
           New Trip
         </Button>
 
-        {/* Notifications Icon */}
-        <button className="relative p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-teal-400 animate-ping" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-teal-400" />
-        </button>
+        {/* Notifications Icon & Dropdown */}
+        <div className="relative">
+          <button
+            onClick={handleToggleDropdown}
+            className="relative p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            aria-label="Notifications"
+            aria-expanded={isDropdownOpen}
+          >
+            <Bell className="w-4 h-4" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-teal-500 text-slate-950 font-extrabold text-[9px] flex items-center justify-center animate-pulse">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </button>
+
+          <NotificationDropdown
+            isOpen={isDropdownOpen}
+            onClose={() => setIsDropdownOpen(false)}
+            notifications={notifications}
+            unreadCount={unreadCount}
+            onMarkRead={handleMarkRead}
+            onMarkAllRead={handleMarkAllRead}
+            onDelete={handleDeleteNotification}
+            onClearAll={handleClearAllNotifications}
+            isLoading={isLoading}
+          />
+        </div>
 
         {/* Profile Pill */}
         <NavLink

@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const { logActivity } = require('./activityLog.service');
+const notificationService = require('./notification.service');
 
 /**
  * Create a new trip.
@@ -26,6 +27,13 @@ const createTrip = async ({ userId, name, description, startDate, endDate, cover
     entityId: trip.id,
     description: `Created trip "${trip.name}"`,
     metadata: { name: trip.name, startDate, endDate },
+  });
+
+  await notificationService.createNotification(userId, {
+    type: 'TRIP_CREATED',
+    title: 'Trip Created',
+    message: `Your trip "${trip.name}" has been created.`,
+    relatedTripId: trip.id,
   });
 
   return trip;
@@ -102,6 +110,13 @@ const updateTrip = async (id, userId, data) => {
     entityId: id,
     description: `Updated trip "${updatedTrip.name}" details`,
     metadata: { updatedFields: Object.keys(data) },
+  });
+
+  await notificationService.createNotification(userId, {
+    type: 'TRIP_UPDATED',
+    title: 'Trip Updated',
+    message: `Your trip "${updatedTrip.name}" has been updated.`,
+    relatedTripId: updatedTrip.id,
   });
 
   return updatedTrip;

@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const { logActivity } = require('./activityLog.service');
+const notificationService = require('./notification.service');
 
 /**
  * Verify trip existence and ownership.
@@ -54,6 +55,14 @@ const createExpense = async (tripId, userId, { amount, currency, category, descr
     metadata: { amount: expense.amount, currency: expense.currency, category: expense.category },
   });
 
+  const formattedAmount = `${expense.currency} ${expense.amount}`;
+  await notificationService.createNotification(userId, {
+    type: 'EXPENSE_ADDED',
+    title: 'Expense Added',
+    message: `An expense of ${formattedAmount} (${expense.category}) was added to your trip.`,
+    relatedTripId: tripId,
+  });
+
   return expense;
 };
 
@@ -96,6 +105,14 @@ const updateExpense = async (tripId, expenseId, userId, data) => {
     metadata: { amount: updatedExpense.amount, category: updatedExpense.category },
   });
 
+  const formattedAmount = `${updatedExpense.currency} ${updatedExpense.amount}`;
+  await notificationService.createNotification(userId, {
+    type: 'EXPENSE_UPDATED',
+    title: 'Expense Updated',
+    message: `The expense "${updatedExpense.description || updatedExpense.category}" has been updated to ${formattedAmount}.`,
+    relatedTripId: tripId,
+  });
+
   return updatedExpense;
 };
 
@@ -115,7 +132,7 @@ const deleteExpense = async (tripId, expenseId, userId) => {
     throw error;
   }
 
-  const result = await prisma.expense.delete({
+  const deleted = await prisma.expense.delete({
     where: { id: expenseId },
   });
 
@@ -130,7 +147,14 @@ const deleteExpense = async (tripId, expenseId, userId) => {
     metadata: { amount: expense.amount, category: expense.category },
   });
 
-  return result;
+  await notificationService.createNotification(userId, {
+    type: 'EXPENSE_DELETED',
+    title: 'Expense Deleted',
+    message: `An expense of ${deleted.currency} ${deleted.amount} was deleted from your trip.`,
+    relatedTripId: tripId,
+  });
+
+  return deleted;
 };
 
 /**

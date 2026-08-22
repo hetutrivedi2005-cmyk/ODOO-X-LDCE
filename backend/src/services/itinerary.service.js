@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const { logActivity } = require('./activityLog.service');
+const notificationService = require('./notification.service');
 
 /**
  * Helper to get date boundaries for a specific day.
@@ -91,6 +92,14 @@ const createItem = async (tripId, userId, { tripStopId, title, description, date
     entityId: item.id,
     description: `Added itinerary activity "${item.title}"`,
     metadata: { title: item.title, date, startTime, location },
+  });
+
+  await notificationService.createNotification(userId, {
+    type: 'ITINERARY_UPDATED',
+    title: 'Itinerary Activity Added',
+    message: `A new activity "${item.title}" was added to your itinerary.`,
+    relatedTripId: tripId,
+    relatedItineraryItemId: item.id,
   });
 
   return item;
@@ -235,6 +244,14 @@ const updateItem = async (tripId, itemId, userId, data) => {
     metadata: { title: updatedItem.title },
   });
 
+  await notificationService.createNotification(userId, {
+    type: 'ITINERARY_UPDATED',
+    title: 'Itinerary Activity Updated',
+    message: `The activity "${updatedItem.title}" in your itinerary has been updated.`,
+    relatedTripId: tripId,
+    relatedItineraryItemId: updatedItem.id,
+  });
+
   return updatedItem;
 };
 
@@ -264,7 +281,8 @@ const deleteItem = async (tripId, itemId, userId) => {
     throw error;
   }
 
-  const result = await prisma.itineraryItem.delete({
+  // 3. Delete the item
+  const deletedItem = await prisma.itineraryItem.delete({
     where: { id: itemId },
   });
 
@@ -279,7 +297,14 @@ const deleteItem = async (tripId, itemId, userId) => {
     metadata: { title: item.title },
   });
 
-  return result;
+  await notificationService.createNotification(userId, {
+    type: 'ITINERARY_UPDATED',
+    title: 'Itinerary Activity Deleted',
+    message: `The activity "${deletedItem.title}" was deleted from your itinerary.`,
+    relatedTripId: tripId,
+  });
+
+  return deletedItem;
 };
 
 /**

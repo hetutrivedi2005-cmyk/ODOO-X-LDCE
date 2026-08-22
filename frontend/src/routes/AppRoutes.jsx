@@ -11,6 +11,7 @@ import EditTripPage from '../pages/EditTripPage';
 import ItineraryPage from '../pages/ItineraryPage';
 import TripExpensesPage from '../pages/TripExpensesPage';
 import TripHistoryPage from '../pages/TripHistoryPage';
+import NotificationsPage from '../pages/NotificationsPage';
 import ExplorePage from '../pages/ExplorePage';
 import RecommendationsPage from '../pages/RecommendationsPage';
 import PublicTripView from '../pages/PublicTripView';
@@ -50,6 +51,7 @@ const AppRoutes = () => {
           <Route path="/explore/recommendations" element={<RecommendationsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
         </Route>
       </Route>
 

@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const prisma = require('../config/prisma');
 const { logActivity } = require('./activityLog.service');
+const notificationService = require('./notification.service');
 
 /**
  * Generates a cryptographically secure share token.
@@ -43,6 +44,13 @@ const createShare = async (tripId, userId, { expiresAt }) => {
     entityId: share.id,
     description: `Created public share link for "${trip.name}"`,
     metadata: { expiresAt: share.expiresAt }
+  });
+
+  await notificationService.createNotification(userId, {
+    type: 'SHARE_CREATED',
+    title: 'Share Link Created',
+    message: `A public share link for your trip "${trip.name}" was created.`,
+    relatedTripId: tripId,
   });
 
   return share;
@@ -95,7 +103,7 @@ const revokeShare = async (tripId, userId, shareId) => {
     throw error;
   }
 
-  const result = await prisma.publicShare.delete({
+  const deleted = await prisma.publicShare.delete({
     where: { id: shareId }
   });
 
@@ -109,7 +117,14 @@ const revokeShare = async (tripId, userId, shareId) => {
     description: `Revoked public share link for "${trip.name}"`,
   });
 
-  return result;
+  await notificationService.createNotification(userId, {
+    type: 'SHARE_REVOKED',
+    title: 'Share Link Revoked',
+    message: `A public share link for your trip "${trip.name}" was revoked.`,
+    relatedTripId: tripId,
+  });
+
+  return deleted;
 };
 
 /**
