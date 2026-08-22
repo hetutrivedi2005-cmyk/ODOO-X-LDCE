@@ -136,9 +136,17 @@ const TripDetailsPage = () => {
             </div>
 
             {/* Action Bar */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Button
                 variant="primary"
+                size="sm"
+                leftIcon={Clock}
+                onClick={() => navigate(`/trips/${trip.id}/itinerary`)}
+              >
+                Day-wise Itinerary
+              </Button>
+              <Button
+                variant="secondary"
                 size="sm"
                 leftIcon={Plus}
                 onClick={() => setIsAddDestinationModalOpen(true)}
@@ -146,7 +154,7 @@ const TripDetailsPage = () => {
                 Add Destination
               </Button>
               <Button
-                variant="secondary"
+                variant="outline"
                 size="sm"
                 leftIcon={Edit2}
                 onClick={() => navigate(`/trips/${trip.id}/edit`)}
