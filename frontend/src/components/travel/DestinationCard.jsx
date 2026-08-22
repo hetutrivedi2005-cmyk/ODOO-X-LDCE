@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, MapPin } from 'lucide-react';
 import { Card, CardContent } from '../ui/Card';
 import CostDisplay from './CostDisplay';
 import { cn } from '../../utils/cn';
+import pexelsService from '../../services/pexelsService';
 
 export const DestinationCard = ({
   city,
@@ -12,6 +13,25 @@ export const DestinationCard = ({
   className = '',
 }) => {
   const { id, name, country, region, costIndex, popularity, image } = city;
+  
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageLoading, setImageLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    const fetchImage = async () => {
+      setImageLoading(true);
+      const url = await pexelsService.getDestinationImage(name, country, image);
+      if (active) {
+        setImageUrl(url);
+        setImageLoading(false);
+      }
+    };
+    fetchImage();
+    return () => {
+      active = false;
+    };
+  }, [name, country, image]);
 
   const renderStars = (rating) => {
     const stars = [];
@@ -38,16 +58,22 @@ export const DestinationCard = ({
     >
       {/* Image Overlay */}
       <div className="relative aspect-video w-full overflow-hidden bg-slate-950">
-        <img
-          src={image || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80'}
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80';
-          }}
-          alt={name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          loading="lazy"
-        />
+        {imageLoading ? (
+          <div className="w-full h-full bg-slate-900/60 animate-pulse flex items-center justify-center text-slate-500">
+            <span className="text-[10px] tracking-widest uppercase font-semibold">Loading Image...</span>
+          </div>
+        ) : (
+          <img
+            src={imageUrl}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80';
+            }}
+            alt={name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
+        )}
         <div className="absolute top-3 left-3">
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-500/10 border border-teal-500/30 text-teal-400 backdrop-blur-sm shadow-md">
             {country}
