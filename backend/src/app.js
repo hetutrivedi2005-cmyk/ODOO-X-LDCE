@@ -1,0 +1,37 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const healthRouter = require('./routes/health');
+const { notFoundHandler, globalErrorHandler } = require('./middleware/errorHandler');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Enable CORS with customizable origin
+const corsOptions = {
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+
+// Built-in JSON request parser middleware
+app.use(express.json());
+
+// Main application API routes
+app.use('/api', healthRouter);
+
+// Central 404 handler for unmatched routes
+app.use(notFoundHandler);
+
+// Centralized error handler
+app.use(globalErrorHandler);
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`==================================================`);
+  console.log(`🚀 GlobeTrotter Backend listening on port ${PORT}`);
+  console.log(`🌍 Health endpoint: http://localhost:${PORT}/api/health`);
+  console.log(`==================================================`);
+});
+
+module.exports = app;

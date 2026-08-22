@@ -1,0 +1,105 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  trips        Trip[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Trip {
+  id          String        @id @default(uuid())
+  title       String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stops       TripStop[]
+  expenses    Expense[]
+  shares      PublicShare[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model City {
+  id         String     @id @default(uuid())
+  name       String
+  country    String
+  lat        Float?
+  lng        Float?
+  stops      TripStop[]
+  activities Activity[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Activity {
+  id                  String              @id @default(uuid())
+  name                String
+  description         String?
+  cityId              String
+  city                City                @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  itineraryActivities ItineraryActivity[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+}
+
+model TripStop {
+  id                  String              @id @default(uuid())
+  tripId              String
+  trip                Trip                @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  cityId              String
+  city                City                @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  sequence            Int
+  arrivalDate         DateTime?
+  departureDate       DateTime?
+  itineraryActivities ItineraryActivity[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+}
+
+model ItineraryActivity {
+  id          String    @id @default(uuid())
+  tripStopId  String
+  tripStop    TripStop  @relation(fields: [tripStopId], references: [id], onDelete: Cascade)
+  activityId  String
+  activity    Activity  @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  scheduledAt DateTime?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  tripId      String
+  trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  amount      Float
+  currency    String
+  category    String?
+  description String?
+  spentAt     DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PublicShare {
+  id         String    @id @default(uuid())
+  tripId     String
+  trip       Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  shareToken String    @unique
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
