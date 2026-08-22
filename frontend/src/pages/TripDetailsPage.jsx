@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, Edit2, Trash2, Plus, ArrowLeft, Clock, FileText, Coins } from 'lucide-react';
+import { MapPin, Calendar, Edit2, Trash2, Plus, ArrowLeft, Clock, FileText, Coins, Share2, Globe } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -9,7 +9,10 @@ import LoadingState from '../components/common/LoadingState';
 import EmptyState from '../components/common/EmptyState';
 import DeleteTripModal from '../components/trip/DeleteTripModal';
 import AddDestinationModal from '../components/trip/AddDestinationModal';
+import ShareTripModal from '../components/sharing/ShareTripModal';
+import ShareLinkList from '../components/sharing/ShareLinkList';
 import tripService from '../services/tripService';
+import shareService from '../services/shareService';
 
 const TripDetailsPage = () => {
   const { id } = useParams();
@@ -24,6 +27,11 @@ const TripDetailsPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isAddDestinationModalOpen, setIsAddDestinationModalOpen] = useState(false);
   const [isAddingStop, setIsAddingStop] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  // Shares state
+  const [shares, setShares] = useState([]);
+  const [isSharesLoading, setIsSharesLoading] = useState(false);
 
   const fetchTripDetails = useCallback(async () => {
     setIsLoading(true);
@@ -39,9 +47,35 @@ const TripDetailsPage = () => {
     }
   }, [id]);
 
+  const fetchShareLinks = useCallback(async () => {
+    setIsSharesLoading(true);
+    try {
+      const data = await shareService.getShareLinks(id);
+      setShares(data);
+    } catch (err) {
+      console.error('Failed to load share links:', err);
+    } finally {
+      setIsSharesLoading(false);
+    }
+  }, [id]);
+
+  const handleRevokeShare = async (shareId) => {
+    if (!window.confirm('Are you sure you want to revoke this public share link? It will stop working immediately.')) {
+      return;
+    }
+    try {
+      await shareService.revokeShareLink(id, shareId);
+      setShares((prev) => prev.filter((s) => s.id !== shareId));
+    } catch (err) {
+      console.error('Failed to revoke share:', err);
+      alert(err.message || 'Failed to revoke share link.');
+    }
+  };
+
   useEffect(() => {
     fetchTripDetails();
-  }, [fetchTripDetails]);
+    fetchShareLinks();
+  }, [fetchTripDetails, fetchShareLinks]);
 
   const handleDeleteConfirm = async () => {
     setIsDeleting(true);
@@ -146,6 +180,14 @@ const TripDetailsPage = () => {
                 Day-wise Itinerary
               </Button>
               <Button
+                variant="outline"
+                size="sm"
+                leftIcon={Share2}
+                onClick={() => setIsShareModalOpen(true)}
+              >
+                Share Trip
+              </Button>
+              <Button
                 variant="secondary"
                 size="sm"
                 leftIcon={Coins}
@@ -247,6 +289,29 @@ const TripDetailsPage = () => {
           />
         )}
       </div>
+
+      {/* Shared Links Section */}
+      <div className="space-y-4 pt-8">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+            <Globe className="w-5 h-5 text-teal-400" /> Public Share Links
+          </h2>
+        </div>
+        <ShareLinkList
+          shares={shares}
+          onRevoke={handleRevokeShare}
+          isLoading={isSharesLoading}
+        />
+      </div>
+
+      {/* Share Trip Configuration Modal */}
+      <ShareTripModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        tripId={trip.id}
+        tripName={trip.name}
+        onShareCreated={fetchShareLinks}
+      />
 
       {/* Delete Confirmation Modal */}
       <DeleteTripModal

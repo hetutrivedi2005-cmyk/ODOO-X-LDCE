@@ -12,6 +12,7 @@ import ItineraryPage from '../pages/ItineraryPage';
 import TripExpensesPage from '../pages/TripExpensesPage';
 import ExplorePage from '../pages/ExplorePage';
 import RecommendationsPage from '../pages/RecommendationsPage';
+import PublicTripView from '../pages/PublicTripView';
 import ProfilePage from '../pages/ProfilePage';
 import LoginPage from '../pages/LoginPage';
 import SignupPage from '../pages/SignupPage';
@@ -22,6 +23,9 @@ const AppRoutes = () => {
     <Routes>
       {/* Root redirect */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+      {/* Unprotected Shared Route */}
+      <Route path="/shared/:shareToken" element={<PublicTripView />} />
 
       {/* Unprotected Auth Layout Routes */}
       <Route element={<AuthLayout />}>

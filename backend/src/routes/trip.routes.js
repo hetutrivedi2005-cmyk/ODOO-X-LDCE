@@ -1,5 +1,6 @@
 const express = require('express');
 const tripController = require('../controllers/trip.controller');
+const shareController = require('../controllers/share.controller');
 const { protect } = require('../middleware/auth.middleware');
 
 const router = express.Router();
@@ -17,5 +18,10 @@ router.delete('/:id', tripController.deleteOne);
 // Trip stop operations
 router.post('/:tripId/stops', tripController.addStop);
 router.delete('/:tripId/stops/:stopId', tripController.removeStop);
+
+// Trip public sharing operations
+router.post('/:tripId/share', shareController.createShare);
+router.get('/:tripId/shares', shareController.listShares);
+router.delete('/:tripId/share/:shareId', shareController.revokeShare);
 
 module.exports = router;

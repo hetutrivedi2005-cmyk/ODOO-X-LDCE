@@ -9,6 +9,7 @@ const tripRouter = require('./routes/trip.routes');
 const recommendationRouter = require('./routes/recommendation.routes');
 const itineraryRouter = require('./routes/itinerary.routes');
 const expenseRouter = require('./routes/expense.routes');
+const shareRouter = require('./routes/share.routes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -28,6 +29,7 @@ app.use('/api', healthRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/trips', tripRouter);
 app.use('/api/destinations', recommendationRouter);
+app.use('/api', shareRouter);
 app.use('/api/trips', itineraryRouter);
 app.use('/api/trips', expenseRouter);
 
