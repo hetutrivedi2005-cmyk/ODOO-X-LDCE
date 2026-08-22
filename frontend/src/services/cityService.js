@@ -1,8 +1,10 @@
 import api from './api';
 import { tripService } from './tripService';
 
-// Set this to false to connect directly to Person 1's backend City API (/api/cities)
-const USE_MOCK_DATA = true;
+// Set this to false by default for live API integration.
+// If the backend APIs are not implemented or return 404/network errors, 
+// the service automatically and gracefully falls back to local mock data.
+const USE_MOCK_DATA = false;
 
 const MOCK_CITIES = [
   {
@@ -134,78 +136,116 @@ const MOCK_TRIPS = [
   { id: '3', name: 'India Heritage Tour', destination: 'Swiss Alps, Switzerland' },
 ];
 
+/**
+ * Normalizes backend response data to ensure it aligns with the frontend shape.
+ * Shape expected: { id, name, country, region, costIndex, popularity, image }
+ */
+const normalizeCity = (city) => {
+  if (!city) return null;
+  return {
+    id: city.id,
+    name: city.name,
+    country: city.country,
+    region: city.region || 'World',
+    costIndex: city.costIndex !== undefined ? city.costIndex : 50,
+    popularity: city.popularity !== undefined ? city.popularity : 70,
+    image: city.image || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80',
+    description: city.description || `Explore the beautiful sights in the city of ${city.name}, ${city.country}.`,
+    currency: city.currency || 'USD',
+    language: city.language || 'English',
+  };
+};
+
+// Local mock filter function
+const getMockCities = async (params = {}) => {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  let filtered = [...MOCK_CITIES];
+
+  if (params.search) {
+    const searchLower = params.search.toLowerCase();
+    filtered = filtered.filter(
+      (city) =>
+        city.name.toLowerCase().includes(searchLower) ||
+        city.country.toLowerCase().includes(searchLower) ||
+        city.region.toLowerCase().includes(searchLower)
+    );
+  }
+
+  if (params.country && params.country !== 'All') {
+    filtered = filtered.filter(
+      (city) => city.country.toLowerCase() === params.country.toLowerCase()
+    );
+  }
+
+  if (params.region && params.region !== 'All') {
+    filtered = filtered.filter(
+      (city) => city.region.toLowerCase() === params.region.toLowerCase()
+    );
+  }
+
+  if (params.cost && params.cost !== 'All') {
+    filtered = filtered.filter((city) => {
+      if (params.cost === 'Budget') return city.costIndex < 35;
+      if (params.cost === 'Moderate') return city.costIndex >= 35 && city.costIndex <= 70;
+      if (params.cost === 'Premium') return city.costIndex > 70;
+      return true;
+    });
+  }
+
+  if (params.popularity && params.popularity !== 'Any') {
+    filtered = filtered.filter((city) => {
+      if (params.popularity === 'Popular') return city.popularity >= 70;
+      if (params.popularity === 'Very Popular') return city.popularity >= 90;
+      return true;
+    });
+  }
+
+  return filtered;
+};
+
 export const getCities = async (params = {}) => {
   if (USE_MOCK_DATA) {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    return getMockCities(params);
+  }
 
-    let filtered = [...MOCK_CITIES];
-
-    // Search query matches city name, country, or region (case-insensitive)
-    if (params.search) {
-      const searchLower = params.search.toLowerCase();
-      filtered = filtered.filter(
-        (city) =>
-          city.name.toLowerCase().includes(searchLower) ||
-          city.country.toLowerCase().includes(searchLower) ||
-          city.region.toLowerCase().includes(searchLower)
-      );
-    }
-
-    // Filter by Country
-    if (params.country && params.country !== 'All') {
-      filtered = filtered.filter(
-        (city) => city.country.toLowerCase() === params.country.toLowerCase()
-      );
-    }
-
-    // Filter by Region
-    if (params.region && params.region !== 'All') {
-      filtered = filtered.filter(
-        (city) => city.region.toLowerCase() === params.region.toLowerCase()
-      );
-    }
-
-    // Filter by Cost Level: Budget (<35), Moderate (35-70), Premium (>70)
-    if (params.cost && params.cost !== 'All') {
-      filtered = filtered.filter((city) => {
-        if (params.cost === 'Budget') return city.costIndex < 35;
-        if (params.cost === 'Moderate') return city.costIndex >= 35 && city.costIndex <= 70;
-        if (params.cost === 'Premium') return city.costIndex > 70;
-        return true;
-      });
-    }
-
-    // Filter by Popularity: Any, Popular (>=70), Very Popular (>=90)
-    if (params.popularity && params.popularity !== 'Any') {
-      filtered = filtered.filter((city) => {
-        if (params.popularity === 'Popular') return city.popularity >= 70;
-        if (params.popularity === 'Very Popular') return city.popularity >= 90;
-        return true;
-      });
-    }
-
-    return filtered;
-  } else {
+  try {
     const response = await api.get('/cities', { params });
-    return response.data;
+    // Normalize response: handle both straight array response and { data: [...] } envelopes
+    const rawCities = response.data?.data || response.data;
+    if (!Array.isArray(rawCities)) {
+      throw new Error('Expected array response for cities');
+    }
+    return rawCities.map(normalizeCity);
+  } catch (error) {
+    console.warn('[cityService] getCities live API failed, falling back to mock data. Reason:', error.message || error);
+    return getMockCities(params);
   }
 };
 
 export const getCityById = async (id) => {
   if (USE_MOCK_DATA) {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    const city = MOCK_CITIES.find((c) => c.id === id);
-    if (!city) {
-      const error = new Error('City not found');
-      error.status = 404;
-      throw error;
-    }
-    return city;
-  } else {
-    const response = await api.get(`/cities/${id}`);
-    return response.data;
+    return getMockCityById(id);
   }
+
+  try {
+    const response = await api.get(`/cities/${id}`);
+    const rawCity = response.data?.data || response.data;
+    return normalizeCity(rawCity);
+  } catch (error) {
+    console.warn(`[cityService] getCityById(${id}) live API failed, falling back to mock data. Reason:`, error.message || error);
+    return getMockCityById(id);
+  }
+};
+
+const getMockCityById = async (id) => {
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  const city = MOCK_CITIES.find((c) => c.id === id);
+  if (!city) {
+    const error = new Error('City not found');
+    error.status = 404;
+    throw error;
+  }
+  return city;
 };
 
 export const searchCities = async (query) => {
@@ -221,8 +261,10 @@ export const getUserTrips = async () => {
     const trips = await tripService.getTrips();
     return trips.map((t) => ({
       id: t.id,
-      name: t.name,
-      destination: t.stops && t.stops.length > 0 ? t.stops.map((s) => s.cityName).join(' & ') : 'Planned Journey',
+      name: t.name || t.title || 'Untitled Trip',
+      destination: t.stops && t.stops.length > 0 
+        ? t.stops.map((s) => s.cityName || s.name || 'Destination').join(' & ') 
+        : 'Planned Journey',
     }));
   } catch (err) {
     console.error('Failed to get user trips in cityService:', err);
@@ -244,4 +286,3 @@ export const addCityToTrip = async (tripId, cityId) => {
     return { success: true, message: 'City added to trip successfully.' };
   }
 };
-
