@@ -231,27 +231,48 @@ const getExpenseAnalytics = async (userId, filters = {}) => {
     }))
   }));
 
-  // Spending over time (monthly grouping)
+  // Spending over time (monthly or daily grouping depending on date range)
+  let useDaily = false;
+  if (filters.startDate) {
+    const start = new Date(filters.startDate);
+    const end = filters.endDate ? new Date(filters.endDate) : new Date();
+    const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24));
+    if (diffDays <= 45) {
+      useDaily = true;
+    }
+  } else if (expenses.length > 0) {
+    const dates = expenses.map(e => new Date(e.spentAt).getTime());
+    const minDate = Math.min(...dates);
+    const maxDate = Math.max(...dates);
+    const diffDays = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24));
+    if (diffDays <= 45) {
+      useDaily = true;
+    }
+  }
+
   const overTimeMap = {};
   expenses.forEach(exp => {
     if (exp.spentAt) {
       const date = new Date(exp.spentAt);
-      const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-      if (!overTimeMap[monthKey]) {
-        overTimeMap[monthKey] = {};
+      const periodKey = useDaily
+        ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        : date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+
+      if (!overTimeMap[periodKey]) {
+        overTimeMap[periodKey] = {};
       }
-      if (!overTimeMap[monthKey][exp.currency]) {
-        overTimeMap[monthKey][exp.currency] = 0;
+      if (!overTimeMap[periodKey][exp.currency]) {
+        overTimeMap[periodKey][exp.currency] = 0;
       }
-      overTimeMap[monthKey][exp.currency] += exp.amount;
+      overTimeMap[periodKey][exp.currency] += exp.amount;
     }
   });
 
-  const overTimeList = Object.keys(overTimeMap).map(mKey => ({
-    period: mKey,
-    breakdown: Object.keys(overTimeMap[mKey]).map(curr => ({
+  const overTimeList = Object.keys(overTimeMap).map(pKey => ({
+    period: pKey,
+    breakdown: Object.keys(overTimeMap[pKey]).map(curr => ({
       currency: curr,
-      amount: overTimeMap[mKey][curr]
+      amount: overTimeMap[pKey][curr]
     }))
   }));
 
